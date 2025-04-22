@@ -86,7 +86,7 @@ function App() {
       buttonRef.current.appendChild(particles);
       setTimeout(() => particles.remove(), 1000);
     }
-  }, [multiplier, addFloatingNumber]);
+  }, [multiplier, addFloatingNumber, walletAddress]);
 
   const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     const buttonRect = buttonRef.current?.getBoundingClientRect();
@@ -193,7 +193,7 @@ function App() {
           value={walletAddress}
           onChange={(e) => {
             localStorage.setItem('walletAddress', e.target.value);
-            setWalletAddress(e.target.value)
+            setWalletAddress(e.target.value);
           }}
           placeholder="Entrez votre adresse de portefeuille"
           className="wallet-address"
