@@ -17,8 +17,8 @@ use crate::*;
 use client_sdk::contract_indexer::axum;
 use client_sdk::contract_indexer::utoipa;
 
-impl ContractHandler for Contract1 {
-    async fn api(store: ContractHandlerStore<Contract1>) -> (Router<()>, OpenApi) {
+impl ContractHandler for Faucet {
+    async fn api(store: ContractHandlerStore<Faucet>) -> (Router<()>, OpenApi) {
         let (router, api) = OpenApiRouter::default()
             .routes(routes!(get_state))
             .split_for_parts();
@@ -26,7 +26,7 @@ impl ContractHandler for Contract1 {
         (router.with_state(store), api)
     }
 
-    fn handle_transaction(
+    fn handle_transaction_success(
         &mut self,
         tx: &sdk::BlobTransaction,
         index: sdk::BlobIndex,

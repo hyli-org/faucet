@@ -16,6 +16,7 @@ fn main() {
     any(feature = "contract1", feature = "contract2",)
 ))]
 fn main() {
+    println!("cargo:rerun-if-changed=contract1/src");
     trait CodegenConsts {
         fn codegen_consts(&self) -> String;
     }
@@ -62,8 +63,6 @@ fn main() {
     let methods: Vec<GuestListEntry> = [
         #[cfg(feature = "contract1")]
         "contract1",
-        #[cfg(feature = "contract2")]
-        "contract2",
     ]
     .iter()
     .map(|name| {

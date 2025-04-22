@@ -9,8 +9,7 @@ use axum::{
     Router,
 };
 use client_sdk::rest_client::NodeApiHttpClient;
-use contract1::Contract1Action;
-use contract2::Contract2Action;
+use contract1::FaucetAction;
 use hyle::{
     bus::{BusClientReceiver, BusMessage, SharedMessageBus},
     model::CommonRunContext,
@@ -31,8 +30,7 @@ pub struct AppModule {
 pub struct AppModuleCtx {
     pub common: Arc<CommonRunContext>,
     pub node_client: Arc<NodeApiHttpClient>,
-    pub contract1_cn: ContractName,
-    pub contract2_cn: ContractName,
+    pub faucet_cn: ContractName,
 }
 
 #[derive(Debug, Clone)]
@@ -54,8 +52,7 @@ impl Module for AppModule {
 
     async fn build(ctx: Self::Context) -> Result<Self> {
         let state = RouterCtx {
-            contract1_cn: ctx.contract1_cn.clone(),
-            contract2_cn: ctx.contract2_cn.clone(),
+            faucet_cn: ctx.faucet_cn.clone(),
             app: Arc::new(Mutex::new(HyleOofCtx {
                 bus: ctx.common.bus.new_handle(),
             })),
@@ -70,7 +67,6 @@ impl Module for AppModule {
 
         let api = Router::new()
             .route("/_health", get(health))
-            .route("/api/increment", post(increment))
             .route("/api/config", get(get_config))
             .with_state(state)
             .layer(cors); // Appliquer le middleware CORS
@@ -98,8 +94,7 @@ impl Module for AppModule {
 struct RouterCtx {
     pub app: Arc<Mutex<HyleOofCtx>>,
     pub client: Arc<NodeApiHttpClient>,
-    pub contract1_cn: ContractName,
-    pub contract2_cn: ContractName,
+    pub faucet_cn: ContractName,
 }
 
 pub struct HyleOofCtx {
@@ -174,69 +169,8 @@ struct ConfigResponse {
 //     Routes
 // --------------------------------------------------------
 
-async fn increment(
-    State(ctx): State<RouterCtx>,
-    headers: HeaderMap,
-) -> Result<impl IntoResponse, AppError> {
-    let auth = AuthHeaders::from_headers(&headers)?;
-    send(ctx.clone(), auth).await
-}
-
 async fn get_config(State(ctx): State<RouterCtx>) -> impl IntoResponse {
     Json(ConfigResponse {
-        contract_name: ctx.contract1_cn.0,
+        contract_name: ctx.faucet_cn.0,
     })
-}
-
-async fn send(ctx: RouterCtx, auth: AuthHeaders) -> Result<impl IntoResponse, AppError> {
-    let _header_session_key = auth.session_key.clone();
-    let _header_signature = auth.signature.clone();
-    let identity = auth.user.clone();
-
-    let action_contract1 = Contract1Action::Increment;
-    let action_contract2 = Contract2Action::Increment;
-
-    let blobs = vec![
-        action_contract1.as_blob(ctx.contract1_cn.clone()),
-        action_contract2.as_blob(ctx.contract2_cn.clone()),
-    ];
-
-    let res = ctx
-        .client
-        .send_tx_blob(&BlobTransaction::new(identity.clone(), blobs))
-        .await;
-
-    if let Err(ref e) = res {
-        let root_cause = e.root_cause().to_string();
-        return Err(AppError(
-            StatusCode::BAD_REQUEST,
-            anyhow::anyhow!("{}", root_cause),
-        ));
-    }
-
-    let tx_hash = res.unwrap();
-
-    let mut bus = {
-        let app = ctx.app.lock().await;
-        AppModuleBusClient::new_from_bus(app.bus.new_handle()).await
-    };
-
-    tokio::time::timeout(Duration::from_secs(5), async {
-        loop {
-            let a = bus.recv().await?;
-            match a {
-                AppEvent::SequencedTx(sequenced_tx_hash) => {
-                    if sequenced_tx_hash == tx_hash {
-                        return Ok(Json(sequenced_tx_hash));
-                    }
-                }
-                AppEvent::FailedTx(sequenced_tx_hash, error) => {
-                    if sequenced_tx_hash == tx_hash {
-                        return Err(AppError(StatusCode::BAD_REQUEST, anyhow::anyhow!(error)));
-                    }
-                }
-            }
-        }
-    })
-    .await?
 }

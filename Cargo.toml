@@ -1,15 +1,15 @@
 [workspace]
 resolver = "2"
-members = ["contracts", "contracts/contract1", "contracts/contract2", "server"]
+members = ["contracts", "contracts/contract1", "server"]
 
 [workspace.dependencies]
-sdk = { package = "hyle-contract-sdk", version = "0.13.0-rc.4" }
-client-sdk = { default-features = false, package = "hyle-client-sdk", version = "0.13.0-rc.4" }
-hyle = { version = "0.13.0-rc.4" }
+sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/multipe_outputs", package = "hyle-contract-sdk" }
+client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/multipe_outputs", default-features = false, package = "hyle-client-sdk" }
+hyle = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/multipe_outputs" }
+hyle-hyllar = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/multipe_outputs", package = "hyle-hyllar" }
 
 contracts = { path = "contracts", default-features = false, package = "contracts" }
 contract1 = { path = "contracts/contract1", package = "contract1" }
-contract2 = { path = "contracts/contract2", package = "contract2" }
 
 [workspace.package]
 version = "0.4.1"

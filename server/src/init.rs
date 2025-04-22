@@ -16,19 +16,15 @@ pub async fn init_node(
     contracts: Vec<ContractInit>,
 ) -> Result<()> {
     for contract in contracts {
-        init_contract(&node, &indexer, contract).await?;
+        init_contract(&node, contract).await?;
     }
     Ok(())
 }
 
-async fn init_contract(
-    node: &NodeApiHttpClient,
-    indexer: &IndexerApiHttpClient,
-    contract: ContractInit,
-) -> Result<()> {
-    match indexer.get_indexer_contract(&contract.name).await {
+async fn init_contract(node: &NodeApiHttpClient, contract: ContractInit) -> Result<()> {
+    match node.get_contract(&contract.name).await {
         Ok(existing) => {
-            let onchain_program_id = hex::encode(existing.program_id.as_slice());
+            let onchain_program_id = hex::encode(existing.program_id.0.as_slice());
             let program_id = hex::encode(contract.program_id);
             if onchain_program_id != program_id {
                 bail!(
@@ -49,18 +45,18 @@ async fn init_contract(
                 contract_name: contract.name.clone(),
             })
             .await?;
-            wait_contract_state(indexer, &contract.name).await?;
+            wait_contract_state(node, &contract.name).await?;
         }
     }
     Ok(())
 }
 async fn wait_contract_state(
-    indexer: &IndexerApiHttpClient,
+    node: &NodeApiHttpClient,
     contract: &ContractName,
 ) -> anyhow::Result<()> {
     timeout(Duration::from_secs(30), async {
         loop {
-            let resp = indexer.get_indexer_contract(contract).await;
+            let resp = node.get_contract(contract).await;
             if resp.is_err() {
                 info!("⏰ Waiting for contract {contract} state to be ready");
                 tokio::time::sleep(Duration::from_millis(500)).await;

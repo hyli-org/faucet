@@ -3,8 +3,7 @@ use app::{AppModule, AppModuleCtx};
 use axum::Router;
 use clap::Parser;
 use client_sdk::rest_client::{IndexerApiHttpClient, NodeApiHttpClient};
-use contract1::Contract1;
-use contract2::Contract2;
+use contract1::Faucet;
 use hyle::{
     bus::{metrics::BusMetrics, SharedMessageBus},
     indexer::{
@@ -17,7 +16,7 @@ use hyle::{
 };
 use prometheus::Registry;
 use prover::{ProverModule, ProverModuleCtx};
-use sdk::{info, ZkContract};
+use sdk::{info, ContractName, ZkContract};
 use std::{
     env,
     sync::{Arc, Mutex},
@@ -34,11 +33,8 @@ pub struct Args {
     #[arg(long, default_value = "config.toml")]
     pub config_file: Option<String>,
 
-    #[arg(long, default_value = "contract1")]
-    pub contract1_cn: String,
-
-    #[arg(long, default_value = "contract2")]
-    pub contract2_cn: String,
+    #[arg(long, default_value = "faucet")]
+    pub faucet_cn: String,
 }
 
 #[tokio::main]
@@ -52,6 +48,13 @@ async fn main() -> Result<()> {
 
     let config = Arc::new(config);
 
+    let contract_name: ContractName = format!(
+        "{}-{}",
+        args.faucet_cn.clone(),
+        &hex::encode(contracts::CONTRACT1_ID)[..5]
+    )
+    .into();
+
     info!("Starting app with config: {:?}", &config);
 
     let node_url = env::var("NODE_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
@@ -61,18 +64,11 @@ async fn main() -> Result<()> {
     let indexer_client =
         Arc::new(IndexerApiHttpClient::new(indexer_url).context("build indexer client")?);
 
-    let contracts = vec![
-        init::ContractInit {
-            name: args.contract1_cn.clone().into(),
-            program_id: contract1::client::tx_executor_handler::metadata::PROGRAM_ID,
-            initial_state: Contract1::default().commit(),
-        },
-        init::ContractInit {
-            name: args.contract2_cn.clone().into(),
-            program_id: contract2::client::tx_executor_handler::metadata::PROGRAM_ID,
-            initial_state: Contract2::default().commit(),
-        },
-    ];
+    let contracts = vec![init::ContractInit {
+        name: contract_name.clone(),
+        program_id: contracts::CONTRACT1_ID,
+        initial_state: Faucet::default().commit(),
+    }];
 
     match init::init_node(node_client.clone(), indexer_client.clone(), contracts).await {
         Ok(_) => {}
@@ -97,33 +93,27 @@ async fn main() -> Result<()> {
     let app_ctx = Arc::new(AppModuleCtx {
         common: ctx.clone(),
         node_client,
-        contract1_cn: args.contract1_cn.clone().into(),
-        contract2_cn: args.contract2_cn.clone().into(),
+        faucet_cn: contract_name.clone(),
     });
     let start_height = app_ctx.node_client.get_block_height().await?;
     let prover_ctx = Arc::new(ProverModuleCtx {
         app: app_ctx.clone(),
         start_height,
+        elf: contracts::CONTRACT1_ELF,
+        contract_name: contract_name.clone(),
     });
 
     handler.build_module::<AppModule>(app_ctx.clone()).await?;
 
     handler
-        .build_module::<ContractStateIndexer<Contract1>>(ContractStateIndexerCtx {
-            contract_name: args.contract1_cn.into(),
+        .build_module::<ContractStateIndexer<Faucet>>(ContractStateIndexerCtx {
+            contract_name,
             common: ctx.clone(),
         })
         .await?;
 
     handler
-        .build_module::<ContractStateIndexer<Contract2>>(ContractStateIndexerCtx {
-            contract_name: args.contract2_cn.into(),
-            common: ctx.clone(),
-        })
-        .await?;
-
-    handler
-        .build_module::<ProverModule>(prover_ctx.clone())
+        .build_module::<ProverModule<Faucet>>(prover_ctx.clone())
         .await?;
 
     // This module connects to the da_address and receives all the blocks²

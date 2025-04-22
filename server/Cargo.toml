@@ -7,9 +7,8 @@ sdk = { workspace = true, features = ["tracing"] }
 client-sdk = { workspace = true, features = ["risc0", "rest"] }
 hyle = { workspace = true }
 contract1 = { workspace = true, features = ["client"] }
-contract2 = { workspace = true, features = ["client"] }
 # Remove features if you want reproducible builds with docker
-contracts = { workspace = true, features = ["nonreproducible"] }
+contracts = { workspace = true, features = ["nonreproducible", "all"] }
 
 risc0-zkvm = { version = "2.0.0", features = ["prove"] }
 

@@ -1,168 +1,277 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
+import { blob_click } from './types/faucet';
+import { nodeService } from './services/NodeService';
+import { BlobTransaction } from 'hyle';
+import { useConfig } from './hooks/useConfig';
 
-interface ContractState {
-  state: any;
-  error?: string;
+interface FloatingNumber {
+  id: number;
+  value: number;
+  x: number;
+  y: number;
+  opacity: number;
 }
 
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  threshold: number;
+  unlocked: boolean;
+}
+
+const ACHIEVEMENTS: Achievement[] = [
+  { id: 'noob', title: '🎮 Noob Clicker', description: 'Click 10 times', threshold: 10, unlocked: false },
+  { id: 'degen', title: '🚀 True Degen', description: 'Click 100 times', threshold: 100, unlocked: false },
+  { id: 'chad', title: '💪 Gigachad', description: 'Click 500 times', threshold: 500, unlocked: false },
+  { id: 'whale', title: '🐋 Whale Alert', description: 'Click 1000 times', threshold: 1000, unlocked: false },
+  { id: 'sigma', title: '🔥 Sigma Grindset', description: 'Click 5000 times', threshold: 5000, unlocked: false },
+];
+
+const POWERUP_COST = 1;
+const AUTO_CLICK_INTERVAL = 100; // 100ms between auto-clicks
+
 function App() {
-  const [contract1State, setContract1State] = useState<ContractState | null>(null);
-  const [contract2State, setContract2State] = useState<ContractState | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [initialResult, setInitialResult] = useState<string | null>(null);
-  const [confirmationResult, setConfirmationResult] = useState<string | null>(null);
-  const [username, setUsername] = useState(() => localStorage.getItem('username') || '');
+  const { isLoading: isLoadingConfig, error: configError } = useConfig();
+  const [count, setCount] = useState(() => Number(localStorage.getItem('count')) || 0);
+  const [multiplier, setMultiplier] = useState(() => Number(localStorage.getItem('multiplier')) || 1);
+  const [autoClickers, setAutoClickers] = useState(() => Number(localStorage.getItem('autoClickers')) || 0);
+  const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumber[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>(() => {
+    const saved = localStorage.getItem('achievements');
+    return saved ? JSON.parse(saved) : ACHIEVEMENTS;
+  });
+  const [lastAchievement, setLastAchievement] = useState<Achievement | null>(null);
+  const [walletAddress, setWalletAddress] = useState(() => localStorage.getItem('walletAddress') || '');
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const nextFloatingNumberId = useRef(0);
 
-  // Save username to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('username', username);
-  }, [username]);
-
-  const fetchContractState = async (contractName: string) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/v1/indexer/contract/${contractName}/state`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error ${response.status}: ${errorText || response.statusText}`);
-      }
-      
-      const text = await response.text();
-      if (!text) {
-        throw new Error('Empty response');
-      }
-      
-      const data = JSON.parse(text);
-      return { state: data };
-    } catch (error) {
-      console.error(`Error fetching ${contractName} state:`, error);
-      return { state: null, error: error instanceof Error ? error.message : String(error) };
-    }
-  };
-
-  useEffect(() => {
-    const fetchStates = async () => {
-      const [state1, state2] = await Promise.all([
-        fetchContractState('contract1'),
-        fetchContractState('contract2')
-      ]);
-      setContract1State(state1);
-      setContract2State(state2);
-    };
-
-    fetchStates();
-    // Refresh states every minute
-    const interval = setInterval(fetchStates, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const pollTransactionStatus = async (txHash: string): Promise<void> => {
-    const maxAttempts = 30; // 30 seconds timeout
-    let attempts = 0;
-    
-    while (attempts < maxAttempts) {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_NODE_BASE_URL}/v1/indexer/transaction/hash/${txHash}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status}`);
-        }
-        
-        const data = await response.json();
-        if (data.transaction_status === "Success") {
-          setConfirmationResult(`Transaction confirmed successful! Hash: ${txHash}`);
-          return;
-        }
-        
-        // Wait 1 second before next attempt
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        attempts++;
-      } catch (error) {
-        console.error('Error polling transaction:', error);
-        // Continue polling even if there's an error
-      }
-    }
-    
-    setConfirmationResult(`Transaction ${txHash} timed out after ${maxAttempts} seconds`);
-  };
-
-  const sendBlobTx = async () => {
-    if (!username) {
-      setInitialResult('Please enter a username first. e.g. <username>.contract1');
-      setConfirmationResult(null);
+  const addFloatingNumber = useCallback((value: number, x: number, y: number) => {
+    if (floatingNumbers.length >= 10) {
       return;
     }
+    const id = nextFloatingNumberId.current++;
+    setFloatingNumbers(numbers => [
+      ...numbers,
+      { id, value, x, y, opacity: 1 }
+    ]);
+  }, []);
 
-    setLoading(true);
-    setConfirmationResult(null);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/api/increment`, {
-        method: 'POST',
-        headers: {
-          'x-user': username,
-          'x-session-key': 'test-session',
-          'x-request-signature': 'test-signature'
-        }
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `HTTP error ${response.status}`);
+  const processClick = useCallback(async (x: number, y: number) => {
+    const increment = multiplier;
+    setCount(c => c + increment);
+    addFloatingNumber(increment, x, y);
+
+    // Send blob tx 
+    const blob = blob_click();
+    const identity = `${walletAddress}@${blob.contract_name}`;
+    const blobTx: BlobTransaction = {
+      identity,
+      blobs: [blob],
+    }
+    nodeService.client.sendBlobTx(blobTx);
+
+    // Add particle effect with a maximum of 20 particles
+    if (buttonRef.current) {
+      const existingParticles = buttonRef.current.getElementsByClassName('particles');
+      if (existingParticles.length >= 10) {
+        return;
       }
 
-      const data = await response.json();
-      setInitialResult(`Transaction sent! Hash: ${JSON.stringify(data)}`);
-      
-      // Start polling for transaction status
-      await pollTransactionStatus(data);
-    } catch (error) {
-      console.error('Error sending transaction:', error);
-      setInitialResult(`Error: ${error instanceof Error ? error.message : String(error)}`);
-      setConfirmationResult(null);
-    } finally {
-      setLoading(false);
+      const particles = document.createElement('div');
+      particles.className = 'particles';
+      particles.style.left = `${x}px`;
+      particles.style.top = `${y}px`;
+      buttonRef.current.appendChild(particles);
+      setTimeout(() => particles.remove(), 1000);
+    }
+  }, [multiplier, addFloatingNumber]);
+
+  const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    const buttonRect = buttonRef.current?.getBoundingClientRect();
+    if (buttonRect) {
+      const x = event.clientX - buttonRect.left;
+      const y = event.clientY - buttonRect.top;
+      processClick(x, y);
+    }
+  }, [processClick]);
+
+  // Save state to localStorage
+  useEffect(() => {
+    localStorage.setItem('count', count.toString());
+    localStorage.setItem('multiplier', multiplier.toString());
+    localStorage.setItem('autoClickers', autoClickers.toString());
+    localStorage.setItem('achievements', JSON.stringify(achievements));
+    localStorage.setItem('walletAddress', walletAddress);
+  }, [count, multiplier, autoClickers, achievements]);
+
+  // Auto clicker effect
+  useEffect(() => {
+    if (autoClickers > 0) {
+      const interval = setInterval(() => {
+        if (buttonRef.current) {
+          const buttonRect = buttonRef.current.getBoundingClientRect();
+          const x = Math.random() * buttonRect.width;
+          const y = Math.random() * buttonRect.height;
+          processClick(x, y);
+        }
+      }, AUTO_CLICK_INTERVAL / autoClickers);
+      return () => clearInterval(interval);
+    }
+  }, [autoClickers, processClick]);
+
+  // Achievement check effect
+  useEffect(() => {
+    achievements.forEach(achievement => {
+      if (!achievement.unlocked && count >= achievement.threshold) {
+        const updatedAchievements = achievements.map(a =>
+          a.id === achievement.id ? { ...a, unlocked: true } : a
+        );
+        setAchievements(updatedAchievements);
+        setLastAchievement(achievement);
+
+        // Clear achievement notification after 3 seconds
+        setTimeout(() => {
+          setLastAchievement(null);
+        }, 3000);
+      }
+    });
+  }, [count, achievements]);
+
+  // Floating numbers animation
+  useEffect(() => {
+    const animationFrame = requestAnimationFrame(function animate() {
+      setFloatingNumbers(numbers =>
+        numbers
+          .map(num => ({
+            ...num,
+            y: num.y - 2,
+            opacity: num.opacity - 0.02
+          }))
+          .filter(num => num.opacity > 0)
+      );
+      requestAnimationFrame(animate);
+    });
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
+
+
+  const buyMultiplier = () => {
+    if (count >= POWERUP_COST) {
+      setCount(c => c - POWERUP_COST);
+      setMultiplier(m => m * 2);
+    }
+
+  };
+
+  const buyAutoClicker = () => {
+    if (count >= POWERUP_COST) {
+      setCount(c => c - POWERUP_COST);
+      setAutoClickers(ac => ac + 1);
     }
   };
+  const resetGame = useCallback(() => {
+    setCount(0);
+    setMultiplier(1);
+    setAutoClickers(0);
+    setAchievements(ACHIEVEMENTS);
+    localStorage.clear();
+    localStorage.setItem('walletAddress', walletAddress);
+  }, []);
+
+  if (isLoadingConfig) {
+    return <div>Loading configuration...</div>;
+  }
 
   return (
     <div className="App">
-      <div className="user-input">
+      <div className="wallet-input">
         <input
           type="text"
-          placeholder="Enter username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="username-input"
+          value={walletAddress}
+          onChange={(e) => {
+            localStorage.setItem('walletAddress', e.target.value);
+            setWalletAddress(e.target.value)
+          }}
+          placeholder="Entrez votre adresse de portefeuille"
+          className="wallet-address"
         />
       </div>
-      <button 
-        className="blob-button" 
-        onClick={sendBlobTx}
-        disabled={loading}
+      <div className="score">🚀 {count.toLocaleString()} POINTS</div>
+
+      <div className="powerups">
+        <button
+          onClick={buyMultiplier}
+          disabled={count < POWERUP_COST}
+          className="powerup-button"
+        >
+          Buy 2x Multiplier ({POWERUP_COST} points)
+          <div className="current">Current: {multiplier}x</div>
+        </button>
+
+        <button
+          onClick={buyAutoClicker}
+          disabled={count < POWERUP_COST}
+          className="powerup-button"
+        >
+          Buy Auto Clicker ({POWERUP_COST} points)
+          <div className="current">Current: {autoClickers}</div>
+        </button>
+      </div>
+
+      <button
+        ref={buttonRef}
+        className="clicker-button"
+        onClick={handleClick}
       >
-        {loading ? 'SENDING...' : 'SEND BLOB TX'}
+        <span className="button-text">CLICK ME</span>
+        {floatingNumbers.map(num => (
+          <div
+            key={num.id}
+            className="floating-number"
+            style={{
+              left: `${num.x}px`,
+              top: `${num.y}px`,
+              opacity: num.opacity,
+            }}
+          >
+            +{num.value}
+          </div>
+        ))}
       </button>
-      {initialResult && <div className="result">{initialResult}</div>}
-      {confirmationResult && <div className="result">{confirmationResult}</div>}
-      <div className="contract-states">
-        <div className="contract-state">
-          <h2>Contract 1 State</h2>
-          {contract1State?.error ? (
-            <div className="error">{contract1State.error}</div>
-          ) : (
-            <pre>{contract1State?.state ? JSON.stringify(contract1State.state, null, 2) : 'Loading...'}</pre>
-          )}
+
+      {lastAchievement && (
+        <div className="achievement-popup">
+          <h3>🏆 Achievement Unlocked!</h3>
+          <div className="achievement-title">{lastAchievement.title}</div>
+          <div className="achievement-description">{lastAchievement.description}</div>
         </div>
-        <div className="contract-state">
-          <h2>Contract 2 State</h2>
-          {contract2State?.error ? (
-            <div className="error">{contract2State.error}</div>
-          ) : (
-            <pre>{contract2State?.state ? JSON.stringify(contract2State.state, null, 2) : 'Loading...'}</pre>
-          )}
+      )}
+
+      <button
+        onClick={resetGame}
+        className="reset-button"
+      >
+        🔄 Réinitialiser le jeu
+      </button>
+
+      <div className="achievements">
+        <h3>🏆 Achievements</h3>
+        <div className="achievement-list">
+          {achievements.map(achievement => (
+            <div
+              key={achievement.id}
+              className={`achievement ${achievement.unlocked ? 'unlocked' : 'locked'}`}
+            >
+              <div className="achievement-title">{achievement.title}</div>
+              <div className="achievement-description">{achievement.description}</div>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

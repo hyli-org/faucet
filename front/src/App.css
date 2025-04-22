@@ -1,3 +1,196 @@
+.wallet-input {
+  margin-bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.wallet-address {
+  width: 80%;
+  max-width: 500px;
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #4a90e2;
+  border-radius: 5px;
+  background-color: #2c3e50;
+  color: white;
+  text-align: center;
+}
+
+.wallet-address::placeholder {
+  color: #95a5a6;
+}
+
+.wallet-address:focus {
+  outline: none;
+  border-color: #2ecc71;
+  box-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+}
+.reset-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.reset-button:hover {
+  background-color: #ff6666;
+}
+.score {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  animation: float 3s ease-in-out infinite;
+}
+
+.powerups {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.powerup-button {
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 1rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s;
+  font-size: 1rem;
+  min-width: 200px;
+}
+
+.powerup-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.powerup-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.powerup-button .current {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 0.5rem;
+}
+
+.clicker-button {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5253 100%);
+  border: none;
+  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  cursor: pointer;
+  position: relative;
+  overflow: visible;
+  transition: transform 0.1s;
+  box-shadow: 0 0 20px rgba(238, 82, 83, 0.5);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.clicker-button:active {
+  transform: scale(0.95);
+}
+
+.button-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.floating-number {
+  position: absolute;
+  pointer-events: none;
+  font-weight: bold;
+  color: #ffeb3b;
+  text-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
+}
+
+.particles {
+  position: absolute;
+  pointer-events: none;
+}
+
+.particles::before {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  animation: particle 1s ease-out forwards;
+  --x: 0px;
+}
+
+.particles::after {
+  content: "⭐";
+  position: absolute;
+  animation: particle 1s ease-out forwards;
+  --x: 20px;
+}
+
+.achievement-popup {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 1rem;
+  animation: achievementPopup 3s ease-in-out forwards;
+}
+
+.achievement-popup h3 {
+  margin: 0 0 0.5rem 0;
+  color: #ffd700;
+}
+
+.achievements {
+  margin-top: 3rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.achievement-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.achievement {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1rem;
+  transition: transform 0.2s;
+}
+
+.achievement.unlocked {
+  background: rgba(76, 175, 80, 0.2);
+  border: 1px solid #4caf50;
+}
+
+.achievement.locked {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.achievement-title {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.achievement-description {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -41,13 +234,75 @@
   color: #888;
 }
 
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes particle {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(var(--x));
+    opacity: 0;
+  }
+}
+
+@keyframes achievementPopup {
+  0% {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  10% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  90% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
 .App {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
+  padding: 2rem;
+  color: white;
+  font-family: "Arial", sans-serif;
+  box-sizing: border-box;
 }
 
 .blob-button {
@@ -59,7 +314,9 @@
   background-color: #646cff;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition:
+    background-color 0.3s,
+    transform 0.2s;
 }
 
 .blob-button:hover {

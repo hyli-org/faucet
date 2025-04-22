@@ -9,11 +9,6 @@ path = "src/main.rs"
 required-features = ["risc0"]
 test = false
 
-[[example]]
-name = "contract1-runner"
-path = "examples/host.rs"
-
-
 [dependencies]
 anyhow = "1.0.96"
 sdk = { workspace = true }
@@ -22,6 +17,7 @@ serde = { version = "1.0", default-features = false, features = [
   "alloc",
 ] }
 borsh = { version = "1.5.7" }
+hyle-hyllar = { workspace = true }
 
 
 risc0-zkvm = { version = "2.0.0", default-features = false, optional = true, features = [
