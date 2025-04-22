@@ -11,11 +11,11 @@ use hyle::{
         da_listener::{DAListener, DAListenerCtx},
     },
     model::{api::NodeInfo, CommonRunContext},
+    modules::prover::{AutoProver, AutoProverCtx},
     rest::{RestApi, RestApiRunContext},
     utils::{conf, logger::setup_tracing, modules::ModulesHandler},
 };
 use prometheus::Registry;
-use prover::{ProverModule, ProverModuleCtx};
 use sdk::{info, ContractName, ZkContract};
 use std::{
     env,
@@ -25,7 +25,6 @@ use tracing::error;
 
 mod app;
 mod init;
-mod prover;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -96,11 +95,12 @@ async fn main() -> Result<()> {
         faucet_cn: contract_name.clone(),
     });
     let start_height = app_ctx.node_client.get_block_height().await?;
-    let prover_ctx = Arc::new(ProverModuleCtx {
-        app: app_ctx.clone(),
+    let prover_ctx = Arc::new(AutoProverCtx {
+        common: ctx.clone(),
         start_height,
         elf: contracts::CONTRACT1_ELF,
         contract_name: contract_name.clone(),
+        node: app_ctx.node_client.clone(),
     });
 
     handler.build_module::<AppModule>(app_ctx.clone()).await?;
@@ -113,7 +113,7 @@ async fn main() -> Result<()> {
         .await?;
 
     handler
-        .build_module::<ProverModule<Faucet>>(prover_ctx.clone())
+        .build_module::<AutoProver<Faucet>>(prover_ctx.clone())
         .await?;
 
     // This module connects to the da_address and receives all the blocks²
