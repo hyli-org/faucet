@@ -47,12 +47,7 @@ async fn main() -> Result<()> {
 
     let config = Arc::new(config);
 
-    let contract_name: ContractName = format!(
-        "{}-{}",
-        args.faucet_cn.clone(),
-        &hex::encode(contracts::CONTRACT1_ID)[..5]
-    )
-    .into();
+    let contract_name: ContractName = args.faucet_cn.clone().into();
 
     info!("Starting app with config: {:?}", &config);
 
@@ -144,7 +139,7 @@ async fn main() -> Result<()> {
             openapi: Default::default(),
             info: NodeInfo {
                 id: ctx.config.id.clone(),
-                da_address: ctx.config.da_address.clone(),
+                da_address: ctx.config.da_read_from.clone(),
                 pubkey: None,
             },
         })

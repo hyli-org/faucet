@@ -2,7 +2,7 @@ use borsh::{io::Error, BorshDeserialize, BorshSerialize};
 use hyle_hyllar::HyllarAction;
 use serde::{Deserialize, Serialize};
 
-use sdk::{Identity, RunResult};
+use sdk::{ContractName, Identity, RunResult};
 
 #[cfg(feature = "client")]
 pub mod client;
@@ -13,30 +13,39 @@ impl sdk::ZkContract for Faucet {
     /// Entry point of the contract's logic
     fn execute(&mut self, calldata: &sdk::Calldata) -> RunResult {
         // Parse contract inputs
-        let (action, ctx) = sdk::utils::parse_raw_calldata::<Nonced<FaucetAction>>(calldata)?;
+        let (action, mut ctx) = sdk::utils::parse_calldata::<Nonced<FaucetAction>>(calldata)?;
         let identity = calldata.identity.clone();
 
         // Execute the given action
         let res = match action.action {
-            FaucetAction::Click => self.click(identity)?,
-            FaucetAction::BuyPowerup { name } => self.buy_powerup(identity, &name)?,
-            FaucetAction::Cashout => {
-                let transfer = sdk::utils::parse_structured_blob::<HyllarAction>(
-                    &calldata.blobs,
-                    &sdk::BlobIndex(calldata.index.0 + 1),
-                )
-                .expect("Failed to parse transfer blob");
+            FaucetAction::Click => {
+                ctx.is_in_callee_blobs(
+                    &ContractName("hyllar".to_string()),
+                    HyllarAction::Transfer {
+                        recipient: identity.0.rsplit_once('@').unwrap().0.to_string(),
+                        amount: 1,
+                    },
+                )?;
 
-                let HyllarAction::Transfer { recipient, amount } = transfer.data.parameters else {
-                    return Err("Hyllar blob is not a transfer".to_string());
-                };
-
-                if format!("{}@{}", recipient, ctx.contract_name) != identity.to_string() {
-                    return Err("Recipient does not match the tx identity".to_string());
-                }
-
-                self.cashout(identity, amount)?
-            }
+                self.click(identity)?
+            } // FaucetAction::BuyPowerup { name } => self.buy_powerup(identity, &name)?,
+              // FaucetAction::Cashout => {
+              //     let transfer = sdk::utils::parse_structured_blob::<HyllarAction>(
+              //         &calldata.blobs,
+              //         &sdk::BlobIndex(calldata.index.0 + 1),
+              //     )
+              //     .expect("Failed to parse transfer blob");
+              //
+              //     let HyllarAction::Transfer { recipient, amount } = transfer.data.parameters else {
+              //         return Err("Hyllar blob is not a transfer".to_string());
+              //     };
+              //
+              //     if format!("{}@{}", recipient, ctx.contract_name) != identity.to_string() {
+              //         return Err("Recipient does not match the tx identity".to_string());
+              //     }
+              //
+              //     self.cashout(identity, amount)?
+              // }
         };
 
         Ok((res, ctx, vec![]))
@@ -167,8 +176,8 @@ pub struct Nonced<T> {
 #[derive(Serialize, Deserialize, BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq)]
 pub enum FaucetAction {
     Click,
-    BuyPowerup { name: String },
-    Cashout,
+    // BuyPowerup { name: String },
+    // Cashout,
 }
 
 impl FaucetAction {

@@ -7,6 +7,7 @@ sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "refacto/multipro
 client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "refacto/multiproof", default-features = false, package = "hyle-client-sdk" }
 hyle = { git = "https://github.com/Hyle-org/hyle.git", branch = "refacto/multiproof" }
 hyle-hyllar = { git = "https://github.com/Hyle-org/hyle.git", branch = "refacto/multiproof", package = "hyle-hyllar" }
+hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "refacto/multiproof", package = "hyle-hydentity" }
 
 contracts = { path = "contracts", default-features = false, package = "contracts" }
 contract1 = { path = "contracts/contract1", package = "contract1" }

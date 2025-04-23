@@ -13,7 +13,7 @@ export interface faucet {
 }
 
 import { borshSerialize, BorshSchema, borshDeserialize } from "borsher";
-import { Blob } from "hyle";
+import { Blob, StructuredBlobData, structuredBlobDataSchema } from "hyle";
 
 export let faucetContractName = "faucet"; // Default value that will be updated
 
@@ -52,42 +52,56 @@ export type FaucetAction =
 // Builders
 //
 
-export const blob_click = (): Blob => {
+export const blob_click = (callee: number): Blob => {
   const action: Nonced<FaucetAction> = {
     action: { Click: {} },
     nonce: Date.now(),
   };
-  const blob: Blob = {
-    contract_name: faucetContractName,
-    data: serializeFaucetAction(action),
-  };
-  return blob;
-};
 
-export const blob_buy_powerup = (name: string): Blob => {
-  const action: Nonced<FaucetAction> = {
-    action: { BuyPowerup: { name } },
-    nonce: Date.now(),
+  const structured: StructuredBlobData<Nonced<FaucetAction>> = {
+    caller: null,
+    callees: [{ 0: callee }],
+    parameters: action,
   };
 
   const blob: Blob = {
     contract_name: faucetContractName,
-    data: serializeFaucetAction(action),
+    data: serializeFaucetAction(structured),
   };
   return blob;
 };
+
+// export const blob_buy_powerup = (name: string): Blob => {
+//   const action: Nonced<FaucetAction> = {
+//     action: { BuyPowerup: { name } },
+//     nonce: Date.now(),
+//   };
+//
+//   const blob: Blob = {
+//     contract_name: faucetContractName,
+//     data: serializeFaucetAction(action),
+//   };
+//   return blob;
+// };
 
 //
 // Serialisation
 //
 
-const serializeFaucetAction = (action: Nonced<FaucetAction>): number[] => {
-  return Array.from(borshSerialize(noncedSchema(schema), action));
+const serializeFaucetAction = (
+  action: StructuredBlobData<Nonced<FaucetAction>>,
+): number[] => {
+  return Array.from(
+    borshSerialize(structuredBlobDataSchema(noncedSchema(schema)), action),
+  );
 };
 export const deserializeFaucetAction = (
   data: number[],
-): Nonced<FaucetAction> => {
-  return borshDeserialize(noncedSchema(schema), Buffer.from(data));
+): StructuredBlobData<Nonced<FaucetAction>> => {
+  return borshDeserialize(
+    structuredBlobDataSchema(noncedSchema(schema)),
+    Buffer.from(data),
+  );
 };
 
 const schema = BorshSchema.Enum({

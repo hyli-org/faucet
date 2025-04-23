@@ -1,6 +1,16 @@
+use anyhow::{self, Context};
 use anyhow::{bail, Result};
-use client_sdk::rest_client::{IndexerApiHttpClient, NodeApiHttpClient};
+use client_sdk::transaction_builder::{ProvableBlobTx, TxExecutorHandler};
+use client_sdk::{
+    contract_states,
+    rest_client::{IndexerApiHttpClient, NodeApiHttpClient},
+    transaction_builder::TxExecutorBuilder,
+};
+use hyle_hydentity::Hydentity;
+use hyle_hyllar::Hyllar;
 use sdk::{api::APIRegisterContract, info, ContractName, ProgramId, StateCommitment};
+use sdk::{Blob, BlobTransaction, Calldata, HyleOutput};
+use serde::Deserialize;
 use std::{sync::Arc, time::Duration};
 use tokio::time::timeout;
 
@@ -18,6 +28,68 @@ pub async fn init_node(
     for contract in contracts {
         init_contract(&node, contract).await?;
     }
+    fund_faucet(node.clone(), indexer.clone()).await?;
+    Ok(())
+}
+
+contract_states!(
+    pub struct States {
+        pub hyllar: Hyllar,
+        pub hydentity: Hydentity,
+    }
+);
+#[derive(Deserialize)]
+struct BalanceResponse {
+    balance: u128,
+}
+
+async fn fund_faucet(
+    node: Arc<NodeApiHttpClient>,
+    indexer: Arc<IndexerApiHttpClient>,
+) -> Result<()> {
+    let response = indexer
+        .get::<BalanceResponse>("v1/indexer/contract/hyllar/balance/faucet")
+        .await;
+    if let Ok(balance) = response {
+        if balance.balance > 0 {
+            info!("✅ Faucet already funded with {} HYLLAR", balance.balance);
+            return Ok(());
+        }
+    }
+
+    info!("Funding faucet");
+    let mut executor = TxExecutorBuilder::new(States {
+        hyllar: indexer.fetch_current_state(&"hyllar".into()).await?,
+        hydentity: indexer.fetch_current_state(&"hydentity".into()).await?,
+    })
+    .build();
+    let mut transaction = ProvableBlobTx::new("faucet@hydentity".into());
+
+    hyle_hydentity::client::tx_executor_handler::verify_identity(
+        &mut transaction,
+        "hydentity".into(),
+        &executor.hydentity,
+        "password".into(),
+    )?;
+
+    hyle_hyllar::client::tx_executor_handler::transfer(
+        &mut transaction,
+        "hyllar".into(),
+        "faucet".into(),
+        1_000_000_000,
+    )?;
+
+    let blob_tx = BlobTransaction::new(transaction.identity.clone(), transaction.blobs.clone());
+
+    let tx = executor.process(transaction)?;
+    let proof = tx.iter_prove().next().unwrap().await?;
+
+    node.send_tx_blob(&blob_tx)
+        .await
+        .context("sending tx blob")?;
+    node.send_tx_proof(&proof)
+        .await
+        .context("sending tx proof")?;
     Ok(())
 }
 

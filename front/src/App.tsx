@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import { blob_click } from './types/faucet';
 import { nodeService } from './services/NodeService';
-import { BlobTransaction } from 'hyle';
+import { BlobTransaction, blob_builder } from 'hyle';
 import { useConfig } from './hooks/useConfig';
 
 interface FloatingNumber {
@@ -64,11 +64,13 @@ function App() {
     addFloatingNumber(increment, x, y);
 
     // Send blob tx 
-    const blob = blob_click();
-    const identity = `${walletAddress}@${blob.contract_name}`;
+    const blobTransfer = blob_builder.token.transfer(walletAddress, "hyllar", 1, 1);
+    const blobClick = blob_click(0);
+
+    const identity = `${walletAddress}@${blobClick.contract_name}`;
     const blobTx: BlobTransaction = {
       identity,
-      blobs: [blob],
+      blobs: [blobTransfer, blobClick],
     }
     nodeService.client.sendBlobTx(blobTx);
 

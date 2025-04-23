@@ -1871,9 +1871,9 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.2.15"
+version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7"
+checksum = "335ff9f135e4384c8150d6f27c6daed433577f86b4750418338c01a1a2528592"
 dependencies = [
  "cfg-if 1.0.0",
  "js-sys",
@@ -2125,7 +2125,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 [[package]]
 name = "hyle"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "anymap",
@@ -2184,7 +2184,7 @@ dependencies = [
 [[package]]
 name = "hyle-amm"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2197,7 +2197,7 @@ dependencies = [
 [[package]]
 name = "hyle-bonsai-runner"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2214,7 +2214,7 @@ dependencies = [
 [[package]]
 name = "hyle-client-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "axum",
@@ -2234,7 +2234,7 @@ dependencies = [
 [[package]]
 name = "hyle-contract-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "borsh",
  "hyle-model",
@@ -2248,7 +2248,7 @@ dependencies = [
 [[package]]
 name = "hyle-contracts"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "hyle-amm",
  "hyle-contract-sdk",
@@ -2263,7 +2263,7 @@ dependencies = [
 [[package]]
 name = "hyle-crypto"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "blst",
@@ -2276,13 +2276,14 @@ dependencies = [
 [[package]]
 name = "hyle-hydentity"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "borsh",
  "hex",
  "hyle-client-sdk",
  "hyle-contract-sdk",
+ "risc0-zkvm",
  "serde",
  "serde_json",
  "sha2",
@@ -2291,12 +2292,13 @@ dependencies = [
 [[package]]
 name = "hyle-hyllar"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "borsh",
  "hyle-client-sdk",
  "hyle-contract-sdk",
+ "risc0-zkvm",
  "serde",
  "serde_with",
  "sha2",
@@ -2305,7 +2307,7 @@ dependencies = [
 [[package]]
 name = "hyle-model"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -2327,7 +2329,7 @@ dependencies = [
 [[package]]
 name = "hyle-net"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "axum",
@@ -2336,6 +2338,7 @@ dependencies = [
  "futures",
  "http-body-util",
  "hyle-contract-sdk",
+ "hyle-crypto",
  "hyper",
  "hyper-util",
  "paste",
@@ -2349,7 +2352,7 @@ dependencies = [
 [[package]]
 name = "hyle-risc0-recursion"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "hyle-contract-sdk",
  "serde",
@@ -2358,7 +2361,7 @@ dependencies = [
 [[package]]
 name = "hyle-smt-token"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2372,7 +2375,7 @@ dependencies = [
 [[package]]
 name = "hyle-staking"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2386,7 +2389,7 @@ dependencies = [
 [[package]]
 name = "hyle-uuid-tld"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "borsh",
  "hyle-client-sdk",
@@ -2399,7 +2402,7 @@ dependencies = [
 [[package]]
 name = "hyle-verifiers"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#e64f9eb13b16277cbdfdbe58dbbad51b5e96492f"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
 dependencies = [
  "anyhow",
  "borsh",
@@ -3889,7 +3892,7 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
 ]
 
 [[package]]
@@ -3971,7 +3974,7 @@ version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba009ff324d1fc1b900bd1fdb31564febe58a8ccc8a6fdbb93b543d33b13ca43"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "libredox",
  "thiserror 1.0.69",
 ]
@@ -4080,7 +4083,7 @@ checksum = "a4689e6c2294d81e88dc6261c768b63bc4fcdb852be6d1352498b114f61383b7"
 dependencies = [
  "cc",
  "cfg-if 1.0.0",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "libc",
  "untrusted",
  "windows-sys 0.52.0",
@@ -4374,7 +4377,7 @@ dependencies = [
  "derive_more 2.0.1",
  "elf",
  "enum-map",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "hex",
  "keccak",
  "lazy-regex",
@@ -4413,7 +4416,7 @@ checksum = "fed76ab12e5af4c93a3996e0609696cfdd0caebe8746af171ef583fa6e4af134"
 dependencies = [
  "bytemuck",
  "cfg-if 1.0.0",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "libm",
  "stability",
 ]
@@ -4829,6 +4832,8 @@ dependencies = [
  "hyle",
  "hyle-client-sdk",
  "hyle-contract-sdk",
+ "hyle-hydentity",
+ "hyle-hyllar",
  "opentelemetry",
  "opentelemetry-prometheus",
  "opentelemetry_sdk",
@@ -5620,9 +5625,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-util"
-version = "0.7.14"
+version = "0.7.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b9590b93e6fcc1739458317cccd391ad3955e2bde8913edf6f95f9e65a8f034"
+checksum = "66a539a9ad6d5d281510d5bd368c973d636c02dbf8a67300bfb6b950696ad7df"
 dependencies = [
  "bytes",
  "futures-core",
