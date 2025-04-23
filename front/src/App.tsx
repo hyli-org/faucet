@@ -43,7 +43,15 @@ function App() {
     return saved ? JSON.parse(saved) : ACHIEVEMENTS;
   });
   const [lastAchievement, setLastAchievement] = useState<Achievement | null>(null);
-  const [walletAddress, setWalletAddress] = useState(() => localStorage.getItem('walletAddress') || '');
+  const [walletAddress, setWalletAddress] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const walletFromUrl = params.get('wallet');
+    if (walletFromUrl) {
+      localStorage.setItem('walletAddress', walletFromUrl);
+      return walletFromUrl;
+    }
+    return localStorage.getItem('walletAddress') || '';
+  });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const nextFloatingNumberId = useRef(0);
 
@@ -194,11 +202,28 @@ function App() {
           type="text"
           value={walletAddress}
           onChange={(e) => {
-            localStorage.setItem('walletAddress', e.target.value);
-            setWalletAddress(e.target.value);
+            const newAddress = e.target.value;
+            localStorage.setItem('walletAddress', newAddress);
+            setWalletAddress(newAddress);
+
+            // Update URL without reloading the page
+            const url = new URL(window.location.href);
+            if (newAddress) {
+              url.searchParams.set('wallet', newAddress);
+            } else {
+              url.searchParams.delete('wallet');
+            }
+            window.history.replaceState({}, '', url);
           }}
           placeholder="Entrez votre adresse de portefeuille"
           className="wallet-address"
+          style={{
+            hyphens: 'auto',
+            overflowWrap: 'break-word',
+            width: '100%',
+            maxWidth: '600px',
+            padding: '8px',
+          }}
         />
       </div>
       <div className="score">🚀 {count.toLocaleString()} POINTS</div>

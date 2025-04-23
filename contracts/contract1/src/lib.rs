@@ -27,7 +27,8 @@ impl sdk::ZkContract for Faucet {
                     },
                 )?;
 
-                self.click(identity)?
+                "Clicked".to_string()
+                // self.click(identity)?
             } // FaucetAction::BuyPowerup { name } => self.buy_powerup(identity, &name)?,
               // FaucetAction::Cashout => {
               //     let transfer = sdk::utils::parse_structured_blob::<HyllarAction>(
