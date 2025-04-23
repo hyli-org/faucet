@@ -29,13 +29,11 @@ const ACHIEVEMENTS: Achievement[] = [
   { id: 'sigma', title: '🔥 Sigma Grindset', description: 'Click 5000 times', threshold: 5000, unlocked: false },
 ];
 
-const POWERUP_COST = 1;
 const AUTO_CLICK_INTERVAL = 100; // 100ms between auto-clicks
 
 function App() {
   const { isLoading: isLoadingConfig, error: configError } = useConfig();
   const [count, setCount] = useState(() => Number(localStorage.getItem('count')) || 0);
-  const [multiplier, setMultiplier] = useState(() => Number(localStorage.getItem('multiplier')) || 1);
   const [autoClickers, setAutoClickers] = useState(() => Number(localStorage.getItem('autoClickers')) || 0);
   const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumber[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>(() => {
@@ -67,12 +65,12 @@ function App() {
   }, []);
 
   const processClick = useCallback(async (x: number, y: number) => {
-    const increment = multiplier;
+    const increment = 1;
     setCount(c => c + increment);
     addFloatingNumber(increment, x, y);
 
     // Send blob tx 
-    const blobTransfer = blob_builder.token.transfer(walletAddress, "hyllar", 1, 1);
+    const blobTransfer = blob_builder.token.transfer(walletAddress, "hyllar", increment, 1);
     const blobClick = blob_click(0);
 
     const identity = `${walletAddress}@${blobClick.contract_name}`;
@@ -96,7 +94,7 @@ function App() {
       buttonRef.current.appendChild(particles);
       setTimeout(() => particles.remove(), 1000);
     }
-  }, [multiplier, addFloatingNumber, walletAddress]);
+  }, [addFloatingNumber, walletAddress]);
 
   const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     const buttonRect = buttonRef.current?.getBoundingClientRect();
@@ -110,11 +108,10 @@ function App() {
   // Save state to localStorage
   useEffect(() => {
     localStorage.setItem('count', count.toString());
-    localStorage.setItem('multiplier', multiplier.toString());
     localStorage.setItem('autoClickers', autoClickers.toString());
     localStorage.setItem('achievements', JSON.stringify(achievements));
     localStorage.setItem('walletAddress', walletAddress);
-  }, [count, multiplier, autoClickers, achievements]);
+  }, [count, autoClickers, achievements]);
 
   // Auto clicker effect
   useEffect(() => {
@@ -167,28 +164,21 @@ function App() {
     return () => cancelAnimationFrame(animationFrame);
   }, []);
 
+  useEffect(() => {
+    nodeService.getBalance(walletAddress).then((balance) => {
+      setCount(balance);
+    }).catch((error) => {
+      setCount(0);
+    });
+  }, [walletAddress]);
 
-  const buyMultiplier = () => {
-    if (count >= POWERUP_COST) {
-      setCount(c => c - POWERUP_COST);
-      setMultiplier(m => m * 2);
-    }
-
-  };
 
   const buyAutoClicker = () => {
-    if (count >= POWERUP_COST) {
-      setCount(c => c - POWERUP_COST);
-      setAutoClickers(ac => ac + 1);
-    }
+    setAutoClickers(ac => ac + 1);
   };
+
   const resetGame = useCallback(() => {
-    setCount(0);
-    setMultiplier(1);
     setAutoClickers(0);
-    setAchievements(ACHIEVEMENTS);
-    localStorage.clear();
-    localStorage.setItem('walletAddress', walletAddress);
   }, []);
 
   if (isLoadingConfig) {
@@ -226,27 +216,19 @@ function App() {
           }}
         />
       </div>
-      <div className="score">🚀 {count.toLocaleString()} POINTS</div>
+      <div className="score">🚀 {count.toLocaleString()} HYLLAR</div>
 
-      <div className="powerups">
-        <button
-          onClick={buyMultiplier}
-          disabled={count < POWERUP_COST}
-          className="powerup-button"
-        >
-          Buy 2x Multiplier ({POWERUP_COST} points)
-          <div className="current">Current: {multiplier}x</div>
-        </button>
-
-        <button
-          onClick={buyAutoClicker}
-          disabled={count < POWERUP_COST}
-          className="powerup-button"
-        >
-          Buy Auto Clicker ({POWERUP_COST} points)
-          <div className="current">Current: {autoClickers}</div>
-        </button>
-      </div>
+      {window.cheatMode && (
+        <div className="powerups">
+          <button
+            onClick={buyAutoClicker}
+            className="powerup-button"
+          >
+            Buy Auto Clicker
+            <div className="current">Current: {autoClickers}</div>
+          </button>
+        </div>
+      )}
 
       <button
         ref={buttonRef}
@@ -277,12 +259,14 @@ function App() {
         </div>
       )}
 
-      <button
-        onClick={resetGame}
-        className="reset-button"
-      >
-        🔄 Réinitialiser le jeu
-      </button>
+      {window.cheatMode && (
+        <button
+          onClick={resetGame}
+          className="reset-button"
+        >
+          🔄 Stop auto clickers
+        </button>
+      )}
 
       <div className="achievements">
         <h3>🏆 Achievements</h3>

@@ -82,14 +82,15 @@ async fn fund_faucet(
     let blob_tx = BlobTransaction::new(transaction.identity.clone(), transaction.blobs.clone());
 
     let tx = executor.process(transaction)?;
-    let proof = tx.iter_prove().next().unwrap().await?;
 
     node.send_tx_blob(&blob_tx)
         .await
         .context("sending tx blob")?;
-    node.send_tx_proof(&proof)
-        .await
-        .context("sending tx proof")?;
+    for proof in tx.iter_prove() {
+        node.send_tx_proof(&proof.await?)
+            .await
+            .context("sending tx proof")?;
+    }
     Ok(())
 }
 
