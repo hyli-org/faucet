@@ -432,12 +432,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "atomic-waker"
-version = "1.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
-
-[[package]]
 name = "auto_ops"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1310,9 +1304,9 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "0.99.19"
+version = "0.99.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3da29a38df43d6f156149c9b43ded5e018ddff2a855cf2cfd62e8cd7d079c69f"
+checksum = "6edb4b64a43d977b8e99788fe3a04d483834fba1215a7e02caa415b626497f7f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1704,21 +1698,12 @@ checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
 
 [[package]]
 name = "foreign-types"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
-dependencies = [
- "foreign-types-shared 0.1.1",
-]
-
-[[package]]
-name = "foreign-types"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d737d9aa519fb7b749cbc3b962edcf310a8dd1f4b67c91c4f83975dbdd17d965"
 dependencies = [
  "foreign-types-macros",
- "foreign-types-shared 0.3.1",
+ "foreign-types-shared",
 ]
 
 [[package]]
@@ -1731,12 +1716,6 @@ dependencies = [
  "quote",
  "syn 2.0.100",
 ]
-
-[[package]]
-name = "foreign-types-shared"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
 name = "foreign-types-shared"
@@ -1925,25 +1904,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "17e2ac29387b1aa07a1e448f7bb4f35b500787971e965b02842b900afa5c8f6f"
 
 [[package]]
-name = "h2"
-version = "0.4.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75249d144030531f8dee69fe9cea04d3edf809a017ae445e2abdff6629e86633"
-dependencies = [
- "atomic-waker",
- "bytes",
- "fnv",
- "futures-core",
- "futures-sink",
- "http",
- "indexmap 2.9.0",
- "slab",
- "tokio",
- "tokio-util",
- "tracing",
-]
-
-[[package]]
 name = "hash32"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2125,7 +2085,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 [[package]]
 name = "hyle"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "anymap",
@@ -2184,7 +2144,7 @@ dependencies = [
 [[package]]
 name = "hyle-amm"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2197,7 +2157,7 @@ dependencies = [
 [[package]]
 name = "hyle-bonsai-runner"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2214,7 +2174,7 @@ dependencies = [
 [[package]]
 name = "hyle-client-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "axum",
@@ -2234,7 +2194,7 @@ dependencies = [
 [[package]]
 name = "hyle-contract-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "borsh",
  "hyle-model",
@@ -2248,7 +2208,7 @@ dependencies = [
 [[package]]
 name = "hyle-contracts"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "hyle-amm",
  "hyle-contract-sdk",
@@ -2263,7 +2223,7 @@ dependencies = [
 [[package]]
 name = "hyle-crypto"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "blst",
@@ -2276,7 +2236,7 @@ dependencies = [
 [[package]]
 name = "hyle-hydentity"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2292,7 +2252,7 @@ dependencies = [
 [[package]]
 name = "hyle-hyllar"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2307,7 +2267,7 @@ dependencies = [
 [[package]]
 name = "hyle-model"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -2316,9 +2276,11 @@ dependencies = [
  "derive_more 2.0.1",
  "hex",
  "readonly",
+ "secp256k1",
  "serde",
  "serde_json",
  "serde_with",
+ "sha2",
  "sha3",
  "sqlx",
  "strum 0.27.1",
@@ -2329,7 +2291,7 @@ dependencies = [
 [[package]]
 name = "hyle-net"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "axum",
@@ -2352,7 +2314,7 @@ dependencies = [
 [[package]]
 name = "hyle-risc0-recursion"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "hyle-contract-sdk",
  "serde",
@@ -2361,7 +2323,7 @@ dependencies = [
 [[package]]
 name = "hyle-smt-token"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2375,7 +2337,7 @@ dependencies = [
 [[package]]
 name = "hyle-staking"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2389,7 +2351,7 @@ dependencies = [
 [[package]]
 name = "hyle-uuid-tld"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "borsh",
  "hyle-client-sdk",
@@ -2402,7 +2364,7 @@ dependencies = [
 [[package]]
 name = "hyle-verifiers"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=refacto%2Fmultiproof#b061579a1a1c714fbc2b8d1a65b8df33d34f3c48"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#ef9dc9124b7803decf6ff8dde5c0ad7dea655f4e"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2425,7 +2387,6 @@ dependencies = [
  "bytes",
  "futures-channel",
  "futures-util",
- "h2",
  "http",
  "http-body",
  "httparse",
@@ -2468,22 +2429,6 @@ dependencies = [
  "tokio-rustls",
  "tower-service",
  "webpki-roots",
-]
-
-[[package]]
-name = "hyper-tls"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70206fc6890eaca9fde8a0bf71caa2ddfc9fe045ac9e5c70df101a7dbde866e0"
-dependencies = [
- "bytes",
- "http-body-util",
- "hyper",
- "hyper-util",
- "native-tls",
- "tokio",
- "tokio-native-tls",
- "tower-service",
 ]
 
 [[package]]
@@ -3121,7 +3066,7 @@ dependencies = [
  "bitflags 2.9.0",
  "block",
  "core-graphics-types",
- "foreign-types 0.5.0",
+ "foreign-types",
  "log",
  "objc",
  "paste",
@@ -3161,23 +3106,6 @@ dependencies = [
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "native-tls"
-version = "0.2.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87de3442987e9dbec73158d5c715e7ad9072fda936bb03d19d7fa10e00520f0e"
-dependencies = [
- "libc",
- "log",
- "openssl",
- "openssl-probe",
- "openssl-sys",
- "schannel",
- "security-framework 2.11.1",
- "security-framework-sys",
- "tempfile",
 ]
 
 [[package]]
@@ -3361,48 +3289,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
-name = "openssl"
-version = "0.10.72"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fedfea7d58a1f73118430a55da6a286e7b044961736ce96a16a17068ea25e5da"
-dependencies = [
- "bitflags 2.9.0",
- "cfg-if 1.0.0",
- "foreign-types 0.3.2",
- "libc",
- "once_cell",
- "openssl-macros",
- "openssl-sys",
-]
-
-[[package]]
-name = "openssl-macros"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.100",
-]
-
-[[package]]
 name = "openssl-probe"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d05e27ee213611ffe7d6348b942e8f942b37114c00cc03cec254295a4a17852e"
-
-[[package]]
-name = "openssl-sys"
-version = "0.9.107"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8288979acd84749c744a9014b4382d42b8f7b2592847b5afb2ed29e5d16ede07"
-dependencies = [
- "cc",
- "libc",
- "pkg-config",
- "vcpkg",
-]
 
 [[package]]
 name = "opentelemetry"
@@ -4031,23 +3921,19 @@ checksum = "d19c46a6fdd48bc4dab94b6103fccc55d34c67cc0ad04653aad4ea2a07cd7bbb"
 dependencies = [
  "base64 0.22.1",
  "bytes",
- "encoding_rs",
  "futures-channel",
  "futures-core",
  "futures-util",
- "h2",
  "http",
  "http-body",
  "http-body-util",
  "hyper",
  "hyper-rustls",
- "hyper-tls",
  "hyper-util",
  "ipnet",
  "js-sys",
  "log",
  "mime",
- "native-tls",
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
@@ -4059,9 +3945,7 @@ dependencies = [
  "serde_json",
  "serde_urlencoded",
  "sync_wrapper",
- "system-configuration",
  "tokio",
- "tokio-native-tls",
  "tokio-rustls",
  "tokio-util",
  "tower",
@@ -4542,7 +4426,7 @@ dependencies = [
  "openssl-probe",
  "rustls-pki-types",
  "schannel",
- "security-framework 3.2.0",
+ "security-framework",
 ]
 
 [[package]]
@@ -4587,7 +4471,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5174a470eeb535a721ae9fdd6e291c2411a906b96592182d05217591d5c5cf7b"
 dependencies = [
  "byteorder",
- "derive_more 0.99.19",
+ "derive_more 0.99.20",
  "twox-hash",
 ]
 
@@ -4654,19 +4538,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4387882333d3aa8cb20530a17c69a3752e97837832f34f6dccc760e715001d9"
 dependencies = [
  "cc",
-]
-
-[[package]]
-name = "security-framework"
-version = "2.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "897b2245f0b511c87893af39b033e5ca9cce68824c4d7e7630b5a1d339658d02"
-dependencies = [
- "bitflags 2.9.0",
- "core-foundation 0.9.4",
- "core-foundation-sys",
- "libc",
- "security-framework-sys",
 ]
 
 [[package]]
@@ -4823,12 +4694,10 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "axum",
- "borsh",
  "clap",
  "contract1",
  "contracts",
  "hex",
- "hmac",
  "hyle",
  "hyle-client-sdk",
  "hyle-contract-sdk",
@@ -4838,29 +4707,11 @@ dependencies = [
  "opentelemetry-prometheus",
  "opentelemetry_sdk",
  "prometheus",
- "rand 0.9.1",
- "reqwest",
- "risc0-binfmt",
- "risc0-circuit-keccak",
- "risc0-circuit-keccak-sys",
- "risc0-circuit-recursion",
- "risc0-circuit-recursion-sys",
- "risc0-groth16",
- "risc0-sys",
- "risc0-zkp",
- "risc0-zkvm",
- "secp256k1",
  "serde",
- "serde_json",
- "sha2",
- "thiserror 2.0.12",
  "tokio",
  "tower-http",
  "tracing",
  "tracing-subscriber 0.3.19",
- "utoipa",
- "utoipa-axum",
- "zip",
 ]
 
 [[package]]
@@ -5343,27 +5194,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "system-configuration"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c879d448e9d986b661742763247d3693ed13609438cf3d006f51f5368a5ba6b"
-dependencies = [
- "bitflags 2.9.0",
- "core-foundation 0.9.4",
- "system-configuration-sys",
-]
-
-[[package]]
-name = "system-configuration-sys"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e1d1b10ced5ca923a1fcb8d03e96b8d3268065d724548c0211415ff6ac6bac4"
-dependencies = [
- "core-foundation-sys",
- "libc",
-]
-
-[[package]]
 name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5563,16 +5393,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.100",
-]
-
-[[package]]
-name = "tokio-native-tls"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbae76ab933c85776efabc971569dd6119c580d8f5d448769dec1764bf796ef2"
-dependencies = [
- "native-tls",
- "tokio",
 ]
 
 [[package]]
@@ -6537,9 +6357,9 @@ checksum = "271414315aff87387382ec3d271b52d7ae78726f5d44ac98b4f4030c91880486"
 
 [[package]]
 name = "winnow"
-version = "0.7.6"
+version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63d3fcd9bba44b03821e7d699eeee959f3126dcc4aa8e4ae18ec617c2a5cea10"
+checksum = "6cb8234a863ea0e8cd7284fcdd4f145233eb00fee02bbdd9861aec44e6477bc5"
 dependencies = [
  "memchr",
 ]
