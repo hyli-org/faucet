@@ -116,7 +116,7 @@ async fn init_contract(node: &NodeApiHttpClient, contract: ContractInit) -> Resu
                 program_id: ProgramId(contract.program_id.to_vec()),
                 state_commitment: contract.initial_state,
                 contract_name: contract.name.clone(),
-                timeout_window: Some(100),
+                timeout_window: None,
             })
             .await?;
             wait_contract_state(node, &contract.name).await?;
