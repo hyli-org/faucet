@@ -11,7 +11,7 @@ test = false
 
 [dependencies]
 anyhow = "1.0.96"
-sdk = { workspace = true }
+sdk = { workspace = true, features = ["tracing"] }
 serde = { version = "1.0", default-features = false, features = [
   "derive",
   "alloc",
@@ -19,12 +19,12 @@ serde = { version = "1.0", default-features = false, features = [
 borsh = { version = "1.5.7" }
 hyle-hyllar = { workspace = true }
 
-
 risc0-zkvm = { version = "2.0.0", default-features = false, optional = true, features = [
   'std',
 ] }
 client-sdk = { workspace = true, default-features = false, features = [
   "risc0",
+  "indexer",
   "rest",
 ], optional = true }
 

@@ -31,7 +31,7 @@ impl ContractHandler for Faucet {
         tx: &sdk::BlobTransaction,
         index: sdk::BlobIndex,
         tx_context: sdk::TxContext,
-    ) -> Result<()> {
+    ) -> Result<Option<()>> {
         let sdk::Blob {
             contract_name,
             data: _,
@@ -55,7 +55,7 @@ impl ContractHandler for Faucet {
             handler = %contract_name,
             "hyle_output: {:?}", hyle_output
         );
-        Ok(())
+        Ok(None)
     }
 }
 
