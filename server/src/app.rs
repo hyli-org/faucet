@@ -9,10 +9,9 @@ use axum::{
     Router,
 };
 use client_sdk::rest_client::NodeApiHttpClient;
-use hyle::{
-    model::CommonRunContext,
+use hyle_modules::{
     module_handle_messages,
-    utils::modules::{module_bus_client, Module},
+    modules::{module_bus_client, CommonRunContext, Module},
 };
 
 use sdk::ContractName;

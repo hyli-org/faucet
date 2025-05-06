@@ -6,7 +6,7 @@ rust-version = "1.81"
 [[bin]]
 name = "contract1"
 path = "src/main.rs"
-required-features = ["risc0"]
+required-features = ["sp1"]
 test = false
 
 [dependencies]
@@ -17,14 +17,11 @@ serde = { version = "1.0", default-features = false, features = [
   "alloc",
 ] }
 borsh = { version = "1.5.7" }
-hyle-hyllar = { workspace = true }
+hyle-hyllar = { workspace = true, default-features = false, features = [] }
 
-risc0-zkvm = { version = "2.0.0", default-features = false, optional = true, features = [
-  'std',
-] }
+sp1-zkvm = { version = "4.2.0", default-features = false, optional = true }
 client-sdk = { workspace = true, default-features = false, features = [
-  "risc0",
-  "indexer",
+  "sp1",
   "rest",
 ], optional = true }
 
@@ -34,12 +31,8 @@ contract1 = { path = ".", features = ["client"] }
 clap = { version = "4.5.23", features = ["derive"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tokio = { version = "1.44.2", features = ["full", "tracing"] }
-risc0-zkvm = { version = "2.0.0", default-features = false, features = [
-  'std',
-  'prove',
-] }
 
 [features]
 default = []
 client = ["dep:client-sdk"]
-risc0 = ["dep:risc0-zkvm", "sdk/risc0"]
+sp1 = ["dep:sp1-zkvm", "sdk/sp1"]

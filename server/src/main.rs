@@ -2,21 +2,21 @@ use anyhow::{Context, Result};
 use app::{AppModule, AppModuleCtx};
 use axum::Router;
 use clap::Parser;
-use client_sdk::rest_client::{IndexerApiHttpClient, NodeApiHttpClient};
+use client_sdk::{helpers::sp1::SP1Prover, rest_client::NodeApiHttpClient};
 use contract1::Faucet;
-use hyle::{
+use hyle_modules::{
     bus::{metrics::BusMetrics, SharedMessageBus},
-    indexer::{
+    modules::{
         contract_state_indexer::{ContractStateIndexer, ContractStateIndexerCtx},
         da_listener::{DAListener, DAListenerCtx},
+        prover::{AutoProver, AutoProverCtx},
+        rest::{RestApi, RestApiRunContext},
+        CommonRunContext, ModulesHandler,
     },
-    model::{api::NodeInfo, CommonRunContext},
-    modules::prover::{AutoProver, AutoProverCtx},
-    rest::{RestApi, RestApiRunContext},
-    utils::{conf, logger::setup_tracing, modules::ModulesHandler},
+    utils::{conf, logger::setup_tracing},
 };
 use prometheus::Registry;
-use sdk::{info, ContractName, ZkContract};
+use sdk::{api::NodeInfo, info, ContractName, ZkContract};
 use std::{
     env,
     sync::{Arc, Mutex},
@@ -42,8 +42,11 @@ async fn main() -> Result<()> {
     let config =
         conf::Conf::new(args.config_file, None, Some(true)).context("reading config file")?;
 
-    setup_tracing(&config, format!("{}(nopkey)", config.id.clone(),))
-        .context("setting up tracing")?;
+    setup_tracing(
+        &config.log_format,
+        format!("{}(nopkey)", config.id.clone(),),
+    )
+    .context("setting up tracing")?;
 
     let config = Arc::new(config);
 
@@ -52,19 +55,19 @@ async fn main() -> Result<()> {
     info!("Starting app with config: {:?}", &config);
 
     let node_url = env::var("NODE_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
-    let indexer_url =
-        env::var("INDEXER_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
     let node_client = Arc::new(NodeApiHttpClient::new(node_url).context("build node client")?);
-    let indexer_client =
-        Arc::new(IndexerApiHttpClient::new(indexer_url).context("build indexer client")?);
 
+    info!("Init prover");
+    let prover = SP1Prover::new(contracts::CONTRACT_ELF);
+
+    info!("Init contract on node");
     let contracts = vec![init::ContractInit {
         name: contract_name.clone(),
-        program_id: contracts::CONTRACT1_ID,
+        program_id: prover.program_id().expect("getting program id").0,
         initial_state: Faucet::default().commit(),
     }];
 
-    match init::init_node(node_client.clone(), indexer_client.clone(), contracts).await {
+    match init::init_node(node_client.clone(), contracts).await {
         Ok(_) => {}
         Err(e) => {
             error!("Error initializing node: {:?}", e);
@@ -91,11 +94,12 @@ async fn main() -> Result<()> {
     });
     let start_height = app_ctx.node_client.get_block_height().await?;
     let prover_ctx = Arc::new(AutoProverCtx {
-        common: ctx.clone(),
         start_height,
-        elf: contracts::CONTRACT1_ELF,
+        prover: Arc::new(prover),
         contract_name: contract_name.clone(),
         node: app_ctx.node_client.clone(),
+        bus,
+        data_directory: ctx.config.data_directory.clone(),
     });
 
     handler.build_module::<AppModule>(app_ctx.clone()).await?;

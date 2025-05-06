@@ -1,0 +1,17 @@
+[package]
+name = "init"
+edition = "2021"
+
+[dependencies]
+sdk = { workspace = true }
+client-sdk = { workspace = true, features = ["risc0", "rest"] }
+hyle-hyllar = { workspace = true, features = ["client"] }
+hyle-hydentity = { workspace = true, features = ["client"] }
+
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0.93"
+serde = { version = "1.0", features = ["derive"] }
+
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+clap = "4.5.28"

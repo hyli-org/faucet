@@ -2,17 +2,19 @@
 
 use contract1::Faucet;
 use sdk::{
-    guest::{execute, GuestEnv, Risc0Env},
+    guest::{execute, GuestEnv, SP1Env},
     Calldata,
 };
 
-risc0_zkvm::guest::entry!(main);
+sp1_zkvm::entrypoint!(main);
 
 fn main() {
-    let env = Risc0Env {};
+    let env = SP1Env {};
     let (commitment_metadata, calldata): (Vec<u8>, Vec<Calldata>) = env.read();
 
     let outputs = execute::<Faucet>(&commitment_metadata, &calldata);
 
-    risc0_zkvm::guest::env::commit(&outputs);
+    let vec = borsh::to_vec(&outputs).unwrap();
+
+    sp1_zkvm::io::commit_slice(&vec);
 }

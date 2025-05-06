@@ -1,13 +1,13 @@
 [workspace]
 resolver = "2"
-members = ["contracts", "contracts/contract1", "server"]
+members = ["contracts", "contracts/contract1", "server", "init"]
 
 [workspace.dependencies]
-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", package = "hyle-contract-sdk" }
-client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", default-features = false, package = "hyle-client-sdk" }
-hyle = { git = "https://github.com/Hyle-org/hyle.git", branch = "main" }
-hyle-hyllar = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", package = "hyle-hyllar" }
-hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", package = "hyle-hydentity" }
+sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/sp1_prover", package = "hyle-contract-sdk" }
+client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/sp1_prover", default-features = false, package = "hyle-client-sdk" }
+hyle-modules = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/sp1_prover", package = "hyle-modules" }
+hyle-hyllar = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/sp1_prover", default-features = false, package = "hyle-hyllar" }
+hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/sp1_prover", package = "hyle-hydentity" }
 
 contracts = { path = "contracts", default-features = false, package = "contracts" }
 contract1 = { path = "contracts/contract1", package = "contract1" }
@@ -17,4 +17,4 @@ version = "0.4.1"
 edition = "2021"
 
 [patch.crates-io]
-sha2 = { git = "https://github.com/risc0/RustCrypto-hashes", tag = "sha2-v0.10.8-risczero.0" }
+sha2 = { git = "https://github.com/sp1-patches/RustCrypto-hashes", package = "sha2", tag = "patch-sha2-0.10.8-sp1-4.0.0" }
