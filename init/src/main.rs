@@ -81,6 +81,7 @@ async fn fund_faucet(
         .await
         .context("sending tx blob")?;
     for proof in tx.iter_prove() {
+        info!("⏳ Waiting for tx proof");
         node.send_tx_proof(&proof.await?)
             .await
             .context("sending tx proof")?;
