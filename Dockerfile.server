@@ -1,8 +1,7 @@
 FROM rust:latest AS builder
 
-RUN curl -L https://risczero.com/install | bash
-RUN /root/.risc0/bin/rzup install
-RUN apt-get update && apt-get install -y libdbus-1-dev
+RUN curl -L https://sp1up.succinct.xyz | bash
+RUN /root/.sp1/bin/sp1up 
 
 WORKDIR /app
 COPY .cargo .cargo
@@ -10,8 +9,9 @@ COPY ./contracts/ ./contracts
 COPY ./server ./server
 COPY Cargo.toml . 
 COPY Cargo.lock .
+COPY config.toml .
 
-RUN cargo build --bin server
+RUN cargo build -p server
 
 # RUNNER
 FROM rust:latest
@@ -19,8 +19,6 @@ FROM rust:latest
 WORKDIR /app
 
 COPY --from=builder /app/target/debug/server ./
-
-RUN apt-get update && apt-get install -y libdbus-1-dev
 
 EXPOSE 4000
 
