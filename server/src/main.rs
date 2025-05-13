@@ -1,24 +1,25 @@
 use anyhow::{Context, Result};
 use app::{AppModule, AppModuleCtx};
 use axum::Router;
-use clap::Parser;
 use client_sdk::{helpers::sp1::SP1Prover, rest_client::NodeApiHttpClient};
+use config::File;
 use contract1::Faucet;
 use hyle_modules::{
     bus::{metrics::BusMetrics, SharedMessageBus},
     modules::{
         contract_state_indexer::{ContractStateIndexer, ContractStateIndexerCtx},
-        da_listener::{DAListener, DAListenerCtx},
+        da_listener::{DAListener, DAListenerConf},
         prover::{AutoProver, AutoProverCtx},
         rest::{RestApi, RestApiRunContext},
-        CommonRunContext, ModulesHandler,
+        BuildApiContextInner, ModulesHandler,
     },
-    utils::{conf, logger::setup_tracing},
+    utils::logger::setup_tracing,
 };
 use prometheus::Registry;
 use sdk::{api::NodeInfo, info, ContractName, ZkContract};
 use std::{
     env,
+    path::PathBuf,
     sync::{Arc, Mutex},
 };
 use tracing::error;
@@ -26,21 +27,28 @@ use tracing::error;
 mod app;
 mod init;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-pub struct Args {
-    #[arg(long, default_value = "config.toml")]
-    pub config_file: Option<String>,
-
-    #[arg(long, default_value = "faucet")]
-    pub faucet_cn: String,
+#[derive(serde::Deserialize, Debug)]
+pub struct Conf {
+    pub id: String,
+    pub log_format: String,
+    pub data_directory: PathBuf,
+    pub rest_server_port: u16,
+    pub rest_server_max_body_size: usize,
+    pub da_read_from: String,
+    pub contract_name: String,
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = Args::parse();
-    let config =
-        conf::Conf::new(args.config_file, None, Some(true)).context("reading config file")?;
+    let config: Conf = config::Config::builder()
+        .add_source(File::from_str(
+            include_str!("../../config.toml"),
+            config::FileFormat::Toml,
+        ))
+        .add_source(config::Environment::with_prefix("FAUCET"))
+        .build()
+        .unwrap()
+        .try_deserialize()?;
 
     setup_tracing(
         &config.log_format,
@@ -50,7 +58,7 @@ async fn main() -> Result<()> {
 
     let config = Arc::new(config);
 
-    let contract_name: ContractName = args.faucet_cn.clone().into();
+    let contract_name: ContractName = config.contract_name.clone().into();
 
     info!("Starting app with config: {:?}", &config);
 
@@ -80,15 +88,13 @@ async fn main() -> Result<()> {
 
     let mut handler = ModulesHandler::new(&bus).await;
 
-    let ctx = Arc::new(CommonRunContext {
-        bus: bus.new_handle(),
-        config: config.clone(),
+    let api = Arc::new(BuildApiContextInner {
         router: Mutex::new(Some(Router::new())),
         openapi: Default::default(),
     });
 
     let app_ctx = Arc::new(AppModuleCtx {
-        common: ctx.clone(),
+        api: api.clone(),
         node_client,
         faucet_cn: contract_name.clone(),
     });
@@ -98,8 +104,7 @@ async fn main() -> Result<()> {
         prover: Arc::new(prover),
         contract_name: contract_name.clone(),
         node: app_ctx.node_client.clone(),
-        bus,
-        data_directory: ctx.config.data_directory.clone(),
+        data_directory: config.data_directory.clone(),
     });
 
     handler.build_module::<AppModule>(app_ctx.clone()).await?;
@@ -107,7 +112,8 @@ async fn main() -> Result<()> {
     handler
         .build_module::<ContractStateIndexer<Faucet>>(ContractStateIndexerCtx {
             contract_name,
-            common: ctx.clone(),
+            data_directory: config.data_directory.clone(),
+            api: api.clone(),
         })
         .await?;
 
@@ -117,15 +123,16 @@ async fn main() -> Result<()> {
 
     // This module connects to the da_address and receives all the blocks²
     handler
-        .build_module::<DAListener>(DAListenerCtx {
-            common: ctx.clone(),
+        .build_module::<DAListener>(DAListenerConf {
+            data_directory: config.data_directory.clone(),
+            da_read_from: config.da_read_from.clone(),
             start_block: None,
         })
         .await?;
 
     // Should come last so the other modules have nested their own routes.
     #[allow(clippy::expect_used, reason = "Fail on misconfiguration")]
-    let router = ctx
+    let router = api
         .router
         .lock()
         .expect("Context router should be available")
@@ -134,16 +141,14 @@ async fn main() -> Result<()> {
 
     handler
         .build_module::<RestApi>(RestApiRunContext {
-            port: ctx.config.rest_server_port,
-            max_body_size: ctx.config.rest_server_max_body_size,
-            bus: ctx.bus.new_handle(),
-            metrics_layer: None,
+            port: config.rest_server_port,
+            max_body_size: config.rest_server_max_body_size,
             registry: Registry::new(),
             router: router.clone(),
             openapi: Default::default(),
             info: NodeInfo {
-                id: ctx.config.id.clone(),
-                da_address: ctx.config.da_read_from.clone(),
+                id: config.id.clone(),
+                da_address: config.da_read_from.clone(),
                 pubkey: None,
             },
         })

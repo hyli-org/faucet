@@ -10,8 +10,9 @@ use axum::{
 };
 use client_sdk::rest_client::NodeApiHttpClient;
 use hyle_modules::{
+    bus::SharedMessageBus,
     module_handle_messages,
-    modules::{module_bus_client, CommonRunContext, Module},
+    modules::{module_bus_client, BuildApiContextInner, Module},
 };
 
 use sdk::ContractName;
@@ -23,7 +24,7 @@ pub struct AppModule {
 }
 
 pub struct AppModuleCtx {
-    pub common: Arc<CommonRunContext>,
+    pub api: Arc<BuildApiContextInner>,
     pub node_client: Arc<NodeApiHttpClient>,
     pub faucet_cn: ContractName,
 }
@@ -37,7 +38,7 @@ pub struct AppModuleBusClient {
 impl Module for AppModule {
     type Context = Arc<AppModuleCtx>;
 
-    async fn build(ctx: Self::Context) -> Result<Self> {
+    async fn build(bus: SharedMessageBus, ctx: Self::Context) -> Result<Self> {
         let state = RouterCtx {
             faucet_cn: ctx.faucet_cn.clone(),
         };
@@ -54,12 +55,12 @@ impl Module for AppModule {
             .with_state(state)
             .layer(cors); // Appliquer le middleware CORS
 
-        if let Ok(mut guard) = ctx.common.router.lock() {
+        if let Ok(mut guard) = ctx.api.router.lock() {
             if let Some(router) = guard.take() {
                 guard.replace(router.merge(api));
             }
         }
-        let bus = AppModuleBusClient::new_from_bus(ctx.common.bus.new_handle()).await;
+        let bus = AppModuleBusClient::new_from_bus(bus.new_handle()).await;
 
         Ok(AppModule { bus })
     }

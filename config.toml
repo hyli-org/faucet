@@ -1,4 +1,6 @@
 id = "hyle-faucet-cookie-clicker"
+contract_name = "faucet"
+log_format = "full"
 rest_server_port = 4001
 da_read_from = "127.0.0.1:4141"
 rest_server_max_body_size = 10_485_760

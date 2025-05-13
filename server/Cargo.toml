@@ -28,3 +28,4 @@ opentelemetry = { version = "0.28" }
 opentelemetry-prometheus = { version = "0.28.0" }
 opentelemetry_sdk = "0.28.0"
 prometheus = { version = "0.13.4" }
+config = "0.15.11"

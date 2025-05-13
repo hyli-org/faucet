@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
-members = ["contracts", "contracts/contract1", "server", "init"]
+members = ["contracts", "contracts/contract1", "server"]
+exclude = ["init"]
 
 [workspace.dependencies]
 sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", package = "hyle-contract-sdk" }
