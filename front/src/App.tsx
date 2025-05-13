@@ -32,7 +32,7 @@ const ACHIEVEMENTS: Achievement[] = [
 const AUTO_CLICK_INTERVAL = 100; // 100ms between auto-clicks
 
 function App() {
-  const { isLoading: isLoadingConfig, error: configError } = useConfig();
+  const { isLoading: isLoadingConfig, error: _configError } = useConfig();
   const [count, setCount] = useState(() => Number(localStorage.getItem('count')) || 0);
   const [autoClickers, setAutoClickers] = useState(() => Number(localStorage.getItem('autoClickers')) || 0);
   const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumber[]>([]);
@@ -167,7 +167,7 @@ function App() {
   useEffect(() => {
     nodeService.getBalance(walletAddress).then((balance) => {
       setCount(balance);
-    }).catch((error) => {
+    }).catch((_) => {
       setCount(0);
     });
   }, [walletAddress]);
