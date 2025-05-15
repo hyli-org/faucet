@@ -1,90 +1,209 @@
-use anyhow::Result;
-use anyhow::{self, Context};
-use client_sdk::transaction_builder::{ProvableBlobTx, TxExecutorHandler};
-use client_sdk::{
-    contract_states,
-    rest_client::{IndexerApiHttpClient, NodeApiHttpClient},
-    transaction_builder::TxExecutorBuilder,
-};
-use hyle_hydentity::Hydentity;
-use hyle_hyllar::Hyllar;
-use sdk::{info, ContractName};
-use sdk::{Blob, BlobTransaction, Calldata, HyleOutput};
-use serde::Deserialize;
-use std::env;
-use std::sync::Arc;
+use std::{future::Future, time::Duration};
 
-#[tokio::main]
-async fn main() -> Result<()> {
-    let node_url = env::var("NODE_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
-    let indexer_url =
-        env::var("INDEXER_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
-    let node_client = Arc::new(NodeApiHttpClient::new(node_url).context("build node client")?);
-    let indexer_client =
-        Arc::new(IndexerApiHttpClient::new(indexer_url).context("build indexer client")?);
+use anyhow::{Context, Result};
+use bytes::Buf;
+use http_body_util::BodyExt;
+use hyper::{body::Incoming, client::conn::http1, Method, Request, Response, Uri};
+use hyper_util::rt::TokioIo;
+use serde::{de::DeserializeOwned, Serialize};
+use tracing::{error, warn};
 
-    fund_faucet(node_client.clone(), indexer_client.clone()).await
+pub enum ContentType {
+    Text,
+    Json,
 }
 
-contract_states!(
-    pub struct States {
-        pub hyllar: Hyllar,
-        pub hydentity: Hydentity,
+#[derive(Clone)]
+pub struct HttpClient {
+    pub url: Uri,
+    pub api_key: Option<String>,
+    pub retry: Option<(usize, Duration)>,
+}
+impl HttpClient {
+    pub async fn request<T>(
+        &self,
+        endpoint: &str,
+        method: Method,
+        content_type: ContentType,
+        body: Option<&T>,
+    ) -> anyhow::Result<Response<Incoming>>
+    where
+        T: Serialize,
+    {
+        let full_url = format!("{}{}", &self.url, endpoint);
+        let uri: Uri = full_url.parse().context("Parsing URI")?;
+
+        let authority = uri.authority().context("URI Authority")?.clone();
+        let host = authority.host().to_string();
+        let port = authority.port_u16().unwrap_or(80);
+        let addr = format!("{}:{}", host, port);
+        let stream = hyle_net::net::TcpStream::connect(addr)
+            .await
+            .context("TCP connection")?;
+        let io = TokioIo::new(stream);
+
+        let (mut sender, connection) = http1::handshake(io).await.context("Handshake HTTP/1")?;
+
+        tokio::spawn(async move {
+            if let Err(e) = connection.await {
+                error!("Connection error {:?}", e);
+            }
+        });
+
+        let content_type_header = match content_type {
+            ContentType::Text => "application/text",
+            ContentType::Json => "application/json",
+        };
+
+        let mut req_builder = Request::builder()
+            .method(method)
+            .uri(uri)
+            .header(hyper::header::CONTENT_TYPE, content_type_header);
+
+        if let Some(ref key) = self.api_key {
+            req_builder = req_builder.header("X-API-KEY", key);
+        }
+
+        let request = if let Some(b) = body {
+            let json_body = serde_json::to_string(b).context("Serializing request body")?;
+
+            req_builder.body(json_body).context("Building request")?
+        } else {
+            req_builder.body("".to_string())?
+        };
+
+        println!("Request: {:?}", request);
+
+        let response = sender
+            .send_request(request)
+            .await
+            .context("Sending request")?;
+
+        if !response.status().is_success() {
+            let body = Self::parse_response_text(response).await?;
+            anyhow::bail!(body);
+        }
+
+        Ok(response)
     }
-);
-#[derive(Deserialize)]
-struct BalanceResponse {
-    balance: u128,
-}
 
-async fn fund_faucet(
-    node: Arc<NodeApiHttpClient>,
-    indexer: Arc<IndexerApiHttpClient>,
-) -> Result<()> {
-    let response = indexer
-        .get::<BalanceResponse>("v1/indexer/contract/hyllar/balance/faucet")
-        .await;
-    if let Ok(balance) = response {
-        if balance.balance > 0 {
-            info!("✅ Faucet already funded with {} HYLLAR", balance.balance);
-            return Ok(());
+    async fn parse_response_text(response: Response<Incoming>) -> anyhow::Result<String> {
+        let body = response.into_body();
+
+        let response = body.collect().await.context("Collecting body bytes")?;
+
+        let str_bytes: bytes::Bytes = response.to_bytes();
+        let str = String::from_utf8(str_bytes.to_vec())?;
+
+        Ok(str)
+    }
+
+    async fn parse_response_json<T: serde::de::DeserializeOwned>(
+        response: Response<Incoming>,
+    ) -> anyhow::Result<T> {
+        let body = response.into_body();
+
+        let response = body
+            .collect()
+            .await
+            .context("Collecting body bytes")?
+            .aggregate();
+
+        let result =
+            serde_json::from_reader(response.reader()).context("Deserializing response body")?;
+        Ok(result)
+    }
+
+    async fn retry<F, Fut, R>(&self, do_request: F) -> Result<R>
+    where
+        F: Fn() -> Fut,
+        Fut: Future<Output = anyhow::Result<R>>,
+    {
+        match self.retry {
+            Some((n, duration)) => {
+                let mut inner_n = n;
+
+                loop {
+                    match do_request().await {
+                        Ok(res) => break Ok(res),
+                        Err(e) if inner_n > 0 => {
+                            warn!(
+                                "Error when doing request, waiting {} millis before retrying: {}",
+                                duration.as_millis(),
+                                e
+                            );
+                            inner_n -= 1;
+                            tokio::time::sleep(duration).await;
+                        }
+                        Err(e) => {
+                            // Stop retrying
+                            break Err(e).context("Client errored after {} retries, stopping now.");
+                        }
+                    }
+                }
+            }
+            None => do_request().await,
         }
     }
 
-    info!("Funding faucet");
-    let mut executor = TxExecutorBuilder::new(States {
-        hyllar: indexer.fetch_current_state(&"hyllar".into()).await?,
-        hydentity: indexer.fetch_current_state(&"hydentity".into()).await?,
-    })
-    .build();
-    let mut transaction = ProvableBlobTx::new("faucet@hydentity".into());
-
-    hyle_hydentity::client::tx_executor_handler::verify_identity(
-        &mut transaction,
-        "hydentity".into(),
-        &executor.hydentity,
-        "password".into(),
-    )?;
-
-    hyle_hyllar::client::tx_executor_handler::transfer(
-        &mut transaction,
-        "hyllar".into(),
-        "faucet".into(),
-        1_000_000_000,
-    )?;
-
-    let blob_tx = BlobTransaction::new(transaction.identity.clone(), transaction.blobs.clone());
-
-    let tx = executor.process(transaction)?;
-
-    node.send_tx_blob(&blob_tx)
-        .await
-        .context("sending tx blob")?;
-    for proof in tx.iter_prove() {
-        info!("⏳ Waiting for tx proof");
-        node.send_tx_proof(&proof.await?)
-            .await
-            .context("sending tx proof")?;
+    pub async fn get<R>(&self, endpoint: &str) -> anyhow::Result<R>
+    where
+        R: DeserializeOwned,
+    {
+        let do_request = async || {
+            self.request::<String>(endpoint, Method::GET, ContentType::Json, None)
+                .await
+        };
+        let response = self.retry(do_request).await?;
+        Self::parse_response_json(response).await
     }
+
+    pub async fn get_str(&self, endpoint: &str) -> anyhow::Result<String> {
+        let do_request = async || {
+            self.request::<String>(endpoint, Method::GET, ContentType::Text, None)
+                .await
+        };
+        let response = self.retry(do_request).await?;
+        Self::parse_response_text(response).await
+    }
+
+    pub async fn post_json<T, R>(&self, endpoint: &str, body: &T) -> anyhow::Result<R>
+    where
+        R: DeserializeOwned,
+        T: Serialize,
+    {
+        let do_request = async || {
+            self.request::<T>(endpoint, Method::POST, ContentType::Json, Some(body))
+                .await
+        };
+        let response = self.retry(do_request).await?;
+        Self::parse_response_json(response).await
+    }
+}
+
+async fn make_request() -> Result<()> {
+    let url = "v1/indexer/contract/hyllar/state";
+
+    let client = HttpClient {
+        url: "https://indexer.testnet.hyli.org".parse()?,
+        api_key: None,
+        retry: None,
+    };
+    let res = client
+        .request(
+            url,
+            hyper::Method::GET,
+            ContentType::Json,
+            Some(&"bobo".to_string()),
+        )
+        .await?;
+    println!("Response: {:?}", res);
     Ok(())
+}
+
+#[tokio::main]
+async fn main() {
+    if let Err(e) = make_request().await {
+        println!("Error: {}", e);
+    }
 }
