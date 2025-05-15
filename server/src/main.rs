@@ -105,6 +105,7 @@ async fn main() -> Result<()> {
         contract_name: contract_name.clone(),
         node: app_ctx.node_client.clone(),
         data_directory: config.data_directory.clone(),
+        default_state: Default::default(),
     });
 
     handler.build_module::<AppModule>(app_ctx.clone()).await?;
