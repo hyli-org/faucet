@@ -4,7 +4,7 @@ class NodeService {
   client: NodeApiHttpClient;
 
   constructor() {
-    this.client = new NodeApiHttpClient(import.meta.env.VITE_NODE_BASE_URL);
+    this.client = new NodeApiHttpClient(import.meta.env.VITE_INDEXER_BASE_URL);
   }
 
   async getBalance(address: string): Promise<number> {
