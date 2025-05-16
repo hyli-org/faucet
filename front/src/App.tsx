@@ -78,7 +78,7 @@ function App() {
       identity,
       blobs: [blobTransfer, blobClick],
     }
-    nodeService.client.sendBlobTx(blobTx);
+    nodeService.sendBlobTx(blobTx);
 
     // Add particle effect with a maximum of 20 particles
     if (buttonRef.current) {

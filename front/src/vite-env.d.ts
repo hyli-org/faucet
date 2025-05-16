@@ -2,4 +2,5 @@
 
 interface Window {
   cheatMode: boolean;
+  apiKey: string;
 }
