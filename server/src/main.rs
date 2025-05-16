@@ -1,7 +1,8 @@
 use anyhow::{Context, Result};
 use app::{AppModule, AppModuleCtx};
 use axum::Router;
-use client_sdk::{helpers::sp1::SP1Prover, rest_client::NodeApiHttpClient};
+use borsh::BorshSerialize;
+use client_sdk::{helpers::ClientSdkProver, rest_client::NodeApiHttpClient};
 use config::File;
 use contract1::Faucet;
 use hyle_modules::{
@@ -16,10 +17,14 @@ use hyle_modules::{
     utils::logger::setup_tracing,
 };
 use prometheus::Registry;
-use sdk::{api::NodeInfo, info, ContractName, ZkContract};
+use sdk::{api::NodeInfo, info, ContractName, ProofData, ZkContract};
+use sp1_sdk::{
+    network::builder::NetworkProverBuilder, NetworkProver, Prover, SP1ProvingKey, SP1Stdin,
+};
 use std::{
     env,
     path::PathBuf,
+    pin::Pin,
     sync::{Arc, Mutex},
 };
 use tracing::error;
@@ -65,8 +70,9 @@ async fn main() -> Result<()> {
     let node_url = env::var("NODE_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
     let node_client = Arc::new(NodeApiHttpClient::new(node_url).context("build node client")?);
 
-    info!("Init prover");
-    let prover = SP1Prover::new(contracts::CONTRACT_ELF);
+    info!("Building Proving Key");
+    let pk = load_pk();
+    let prover = SP1NetworkProver::new(pk).await;
 
     info!("Init contract on node");
     let contracts = vec![init::ContractInit {
@@ -186,4 +192,63 @@ async fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+pub fn load_pk() -> SP1ProvingKey {
+    let client = sp1_sdk::ProverClient::builder().mock().build();
+    let (pk, _) = client.setup(contracts::CONTRACT_ELF);
+    pk
+}
+
+pub struct SP1NetworkProver {
+    pk: SP1ProvingKey,
+    client: NetworkProver,
+}
+impl SP1NetworkProver {
+    pub async fn new(pk: SP1ProvingKey) -> Self {
+        // Setup the program for proving.
+        let client = NetworkProverBuilder::default().build();
+        info!("Registering program");
+        client
+            .register_program(&pk.vk, &pk.elf)
+            .await
+            .expect("registering program");
+        Self { client, pk }
+    }
+
+    pub fn program_id(&self) -> Result<sdk::ProgramId> {
+        Ok(sdk::ProgramId(serde_json::to_vec(&self.pk.vk)?))
+    }
+
+    pub async fn prove<T: BorshSerialize>(
+        &self,
+        commitment_metadata: Vec<u8>,
+        calldatas: T,
+    ) -> Result<ProofData> {
+        // Setup the inputs.
+        let mut stdin = SP1Stdin::new();
+        let encoded = borsh::to_vec(&(commitment_metadata, calldatas))?;
+        stdin.write_vec(encoded);
+
+        // Generate the proof
+        let proof = self
+            .client
+            .prove(&self.pk, &stdin)
+            .strategy(sp1_sdk::network::FulfillmentStrategy::Reserved)
+            .run()
+            .expect("failed to generate proof");
+
+        let encoded_receipt = bincode::serialize(&proof)?;
+        Ok(ProofData(encoded_receipt))
+    }
+}
+
+impl<T: BorshSerialize + Send + 'static> ClientSdkProver<T> for SP1NetworkProver {
+    fn prove(
+        &self,
+        commitment_metadata: Vec<u8>,
+        calldatas: T,
+    ) -> Pin<Box<dyn std::future::Future<Output = Result<ProofData>> + Send + '_>> {
+        Box::pin(self.prove(commitment_metadata, calldatas))
+    }
 }
