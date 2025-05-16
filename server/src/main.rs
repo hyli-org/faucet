@@ -234,6 +234,7 @@ impl SP1NetworkProver {
         let proof = self
             .client
             .prove(&self.pk, &stdin)
+            .compressed()
             .strategy(sp1_sdk::network::FulfillmentStrategy::Reserved)
             .run()
             .expect("failed to generate proof");
