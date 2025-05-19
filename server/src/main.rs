@@ -20,8 +20,7 @@ use hyle_modules::{
 use prometheus::Registry;
 use sdk::{api::NodeInfo, info, ContractName, ProofData, ZkContract};
 use sp1_sdk::{
-    network::builder::NetworkProverBuilder, NetworkProver, Prover, SP1Prover, SP1ProvingKey,
-    SP1Stdin,
+    network::builder::NetworkProverBuilder, NetworkProver, Prover, SP1ProvingKey, SP1Stdin,
 };
 use std::{
     env,
