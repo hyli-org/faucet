@@ -30,7 +30,7 @@ const ACHIEVEMENTS: Achievement[] = [
   { id: 'sigma', title: '🔥 Sigma Grindset', description: 'Click 5000 times', threshold: 5000, unlocked: false },
 ];
 
-const AUTO_CLICK_INTERVAL = 1500; // 100ms between auto-clicks
+const AUTO_CLICK_INTERVAL = 100; // 100ms between auto-clicks
 
 function App() {
   const { isLoading: isLoadingConfig, error: _configError } = useConfig();
@@ -79,9 +79,6 @@ function App() {
       blobs: [blobTransfer, blobClick],
     }
     nodeService.sendBlobTx(blobTx);
-    // Random wallet address 
-    const randomWallet = Math.random().toString(36).substring(2, 15);
-    setWalletAddress(randomWallet);
 
     // Add particle effect with a maximum of 20 particles
     if (buttonRef.current) {

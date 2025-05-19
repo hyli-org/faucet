@@ -3,15 +3,15 @@ name = "init"
 edition = "2021"
 
 [dependencies]
-sdk = { path = "/home/bertrand/workspace/hyle/crates/contract-sdk", package = "hyle-contract-sdk" }
-client-sdk = { path = "/home/bertrand/workspace/hyle/crates/client-sdk", default-features = false, package = "hyle-client-sdk" }
-hyle-smt-token = { path = "/home/bertrand/workspace/hyle/crates/contracts/smt-token", features = [
+sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_token_inputs", package = "hyle-contract-sdk" }
+client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_token_inputs", default-features = false, package = "hyle-client-sdk" }
+hyle-smt-token = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_token_inputs", features = [
   "client",
 ], default-features = false, package = "hyle-smt-token" }
-hyle-hydentity = { path = "/home/bertrand/workspace/hyle/crates/contracts/hydentity", features = [
+hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_token_inputs", features = [
   "client",
 ], package = "hyle-hydentity" }
-hyle-net = { path = "/home/bertrand/workspace/hyle/crates/hyle-net", features = [
+hyle-net = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_token_inputs", features = [
 ], package = "hyle-net" }
 
 tokio = { version = "1", features = ["full"] }
