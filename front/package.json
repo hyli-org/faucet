@@ -15,7 +15,7 @@
     "@types/react-router-dom": "^5.3.3",
     "crypto-js": "^4.2.0",
     "elliptic": "^6.6.1",
-    "hyle": "^0.2.5",
+    "hyli": "^0.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.5.0"
