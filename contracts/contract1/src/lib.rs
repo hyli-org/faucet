@@ -1,5 +1,4 @@
 use borsh::{io::Error, BorshDeserialize, BorshSerialize};
-use hyle_hyllar::HyllarAction;
 use serde::{Deserialize, Serialize};
 
 use sdk::{ContractName, Identity, RunResult};
@@ -8,6 +7,27 @@ use sdk::{ContractName, Identity, RunResult};
 pub mod client;
 #[cfg(feature = "client")]
 pub mod indexer;
+
+/// Copy from SmtTokenAction, because sparse merkle tree can't be compiled in sp1
+#[derive(Clone, PartialEq, BorshDeserialize, BorshSerialize)]
+pub enum SmtTokenAction {
+    Transfer {
+        sender: Identity,
+        recipient: Identity,
+        amount: u128,
+    },
+    TransferFrom {
+        owner: Identity,
+        spender: Identity,
+        recipient: Identity,
+        amount: u128,
+    },
+    Approve {
+        owner: Identity,
+        spender: Identity,
+        amount: u128,
+    },
+}
 
 impl sdk::ZkContract for Faucet {
     /// Entry point of the contract's logic
@@ -20,10 +40,11 @@ impl sdk::ZkContract for Faucet {
         let res = match action.action {
             FaucetAction::Click => {
                 ctx.is_in_callee_blobs(
-                    &ContractName("hyllar".to_string()),
-                    HyllarAction::Transfer {
-                        recipient: identity.0.rsplit_once('@').unwrap().0.to_string(),
+                    &ContractName("oranj".to_string()),
+                    SmtTokenAction::Transfer {
                         amount: 1,
+                        sender: ctx.contract_name.0.clone().into(),
+                        recipient: identity.0.rsplit_once('@').unwrap().0.into(),
                     },
                 )?;
 

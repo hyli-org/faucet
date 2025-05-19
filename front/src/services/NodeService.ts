@@ -45,7 +45,7 @@ class NodeService {
       balance: number;
     }
     const balance: BalanceResponse = await this.indexer.get(
-      "v1/indexer/contract/hyllar/balance/" + address,
+      "v1/indexer/contract/oranj/balance/" + address,
       "get balance",
     );
     console.log("Balance:", balance);

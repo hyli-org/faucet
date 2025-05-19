@@ -7,10 +7,11 @@ use client_sdk::{
     transaction_builder::TxExecutorBuilder,
 };
 use hyle_hydentity::Hydentity;
-use hyle_hyllar::Hyllar;
+use hyle_smt_token::account::{Account, AccountSMT};
 use sdk::{info, ContractName};
 use sdk::{Blob, BlobTransaction, Calldata, HyleOutput};
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::env;
 use std::sync::Arc;
 
@@ -28,7 +29,7 @@ async fn main() -> Result<()> {
 
 contract_states!(
     pub struct States {
-        pub hyllar: Hyllar,
+        pub oranj: AccountSMT,
         pub hydentity: Hydentity,
     }
 );
@@ -42,18 +43,25 @@ async fn fund_faucet(
     indexer: Arc<IndexerApiHttpClient>,
 ) -> Result<()> {
     let response = indexer
-        .get::<BalanceResponse>("v1/indexer/contract/hyllar/balance/faucet")
+        .get::<BalanceResponse>("v1/indexer/contract/oranj/balance/faucet")
         .await;
     if let Ok(balance) = response {
         if balance.balance > 0 {
-            info!("✅ Faucet already funded with {} HYLLAR", balance.balance);
+            info!("✅ Faucet already funded with {} ORANJ", balance.balance);
             return Ok(());
         }
     }
 
     info!("Funding faucet");
+    let api: HashMap<String, Account> = indexer.fetch_current_state(&"oranj".into()).await?;
+    let mut oranj = AccountSMT::default();
+    for (id, account) in api.into_iter() {
+        info!("Funding account {}", id);
+        oranj.0.update(account.get_key(), account)?;
+    }
+
     let mut executor = TxExecutorBuilder::new(States {
-        hyllar: indexer.fetch_current_state(&"hyllar".into()).await?,
+        oranj,
         hydentity: indexer.fetch_current_state(&"hydentity".into()).await?,
     })
     .build();
@@ -66,9 +74,10 @@ async fn fund_faucet(
         "password".into(),
     )?;
 
-    hyle_hyllar::client::tx_executor_handler::transfer(
+    executor.oranj.transfer(
         &mut transaction,
-        "hyllar".into(),
+        "oranj".into(),
+        "faucet@hydentity".into(),
         "faucet".into(),
         1_000_000_000,
     )?;

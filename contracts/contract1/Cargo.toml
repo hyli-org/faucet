@@ -17,7 +17,8 @@ serde = { version = "1.0", default-features = false, features = [
   "alloc",
 ] }
 borsh = { version = "1.5.7" }
-hyle-hyllar = { workspace = true, default-features = false, features = [] }
+# sparse-merkle-tree can't be compiled in sp1
+# hyle-smt-token = { workspace = true, default-features = false, features = [] }
 
 sp1-zkvm = { version = "4.2.0", default-features = false, optional = true }
 client-sdk = { workspace = true, default-features = false, features = [

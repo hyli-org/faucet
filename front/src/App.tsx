@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import { blob_click } from './types/faucet';
 import { nodeService } from './services/NodeService';
-import { BlobTransaction, blob_builder } from 'hyle';
+import { BlobTransaction } from 'hyle';
 import { useConfig } from './hooks/useConfig';
+import { transfer } from './types/smt_token';
 
 interface FloatingNumber {
   id: number;
@@ -29,7 +30,7 @@ const ACHIEVEMENTS: Achievement[] = [
   { id: 'sigma', title: '🔥 Sigma Grindset', description: 'Click 5000 times', threshold: 5000, unlocked: false },
 ];
 
-const AUTO_CLICK_INTERVAL = 100; // 100ms between auto-clicks
+const AUTO_CLICK_INTERVAL = 1500; // 100ms between auto-clicks
 
 function App() {
   const { isLoading: isLoadingConfig, error: _configError } = useConfig();
@@ -65,12 +66,11 @@ function App() {
   }, []);
 
   const processClick = useCallback(async (x: number, y: number) => {
-    const increment = 1;
-    setCount(c => c + increment);
-    addFloatingNumber(increment, x, y);
+    setCount(c => c + 1);
+    addFloatingNumber(1, x, y);
 
     // Send blob tx 
-    const blobTransfer = blob_builder.token.transfer(walletAddress, "hyllar", increment, 1);
+    const blobTransfer = transfer("faucet", walletAddress, "oranj", BigInt(1), 1);
     const blobClick = blob_click(0);
 
     const identity = `${walletAddress}@${blobClick.contract_name}`;
@@ -79,6 +79,9 @@ function App() {
       blobs: [blobTransfer, blobClick],
     }
     nodeService.sendBlobTx(blobTx);
+    // Random wallet address 
+    const randomWallet = Math.random().toString(36).substring(2, 15);
+    setWalletAddress(randomWallet);
 
     // Add particle effect with a maximum of 20 particles
     if (buttonRef.current) {
@@ -216,7 +219,7 @@ function App() {
           }}
         />
       </div>
-      <div className="score">🚀 {count.toLocaleString()} HYLLAR</div>
+      <div className="score">🚀 {count.toLocaleString()} ORANJ</div>
 
       {window.cheatMode && (
         <div className="powerups">
