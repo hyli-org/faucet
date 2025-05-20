@@ -41,6 +41,7 @@ async fn init_contract(node: &NodeApiHttpClient, contract: ContractInit) -> Resu
                 state_commitment: contract.initial_state,
                 contract_name: contract.name.clone(),
                 timeout_window: None,
+                constructor_metadata: None,
             })
             .await?;
             wait_contract_state(node, &contract.name).await?;
