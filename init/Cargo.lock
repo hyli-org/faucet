@@ -3470,7 +3470,7 @@ dependencies = [
 [[package]]
 name = "hyle-bonsai-runner"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=fix%2Fbatching_smt#724d36e0b95d0a7a571cf601b5c3b7f11255e551"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#e1673dee576ad40a5f5c8a8d94f927049d4ccc27"
 dependencies = [
  "anyhow",
  "bincode",
@@ -3488,7 +3488,7 @@ dependencies = [
 [[package]]
 name = "hyle-client-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=fix%2Fbatching_smt#724d36e0b95d0a7a571cf601b5c3b7f11255e551"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#e1673dee576ad40a5f5c8a8d94f927049d4ccc27"
 dependencies = [
  "anyhow",
  "axum",
@@ -3508,7 +3508,7 @@ dependencies = [
 [[package]]
 name = "hyle-contract-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=fix%2Fbatching_smt#724d36e0b95d0a7a571cf601b5c3b7f11255e551"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#e1673dee576ad40a5f5c8a8d94f927049d4ccc27"
 dependencies = [
  "borsh",
  "hyle-model",
@@ -3521,7 +3521,7 @@ dependencies = [
 [[package]]
 name = "hyle-crypto"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=fix%2Fbatching_smt#724d36e0b95d0a7a571cf601b5c3b7f11255e551"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#e1673dee576ad40a5f5c8a8d94f927049d4ccc27"
 dependencies = [
  "anyhow",
  "blst",
@@ -3534,7 +3534,7 @@ dependencies = [
 [[package]]
 name = "hyle-hydentity"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=fix%2Fbatching_smt#724d36e0b95d0a7a571cf601b5c3b7f11255e551"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#e1673dee576ad40a5f5c8a8d94f927049d4ccc27"
 dependencies = [
  "anyhow",
  "borsh",
@@ -3549,7 +3549,7 @@ dependencies = [
 [[package]]
 name = "hyle-model"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=fix%2Fbatching_smt#724d36e0b95d0a7a571cf601b5c3b7f11255e551"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#e1673dee576ad40a5f5c8a8d94f927049d4ccc27"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -3572,7 +3572,7 @@ dependencies = [
 [[package]]
 name = "hyle-net"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=fix%2Fbatching_smt#724d36e0b95d0a7a571cf601b5c3b7f11255e551"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#e1673dee576ad40a5f5c8a8d94f927049d4ccc27"
 dependencies = [
  "anyhow",
  "axum",
@@ -3598,7 +3598,7 @@ dependencies = [
 [[package]]
 name = "hyle-smt-token"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=fix%2Fbatching_smt#724d36e0b95d0a7a571cf601b5c3b7f11255e551"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#e1673dee576ad40a5f5c8a8d94f927049d4ccc27"
 dependencies = [
  "anyhow",
  "borsh",
@@ -4601,9 +4601,9 @@ dependencies = [
 
 [[package]]
 name = "parity-scale-codec"
-version = "3.7.4"
+version = "3.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9fde3d0718baf5bc92f577d652001da0f8d54cd03a7974e118d04fc888dc23d"
+checksum = "799781ae679d79a948e13d4824a40970bfa500058d245760dd857301059810fa"
 dependencies = [
  "arrayvec",
  "bitvec",
@@ -4617,9 +4617,9 @@ dependencies = [
 
 [[package]]
 name = "parity-scale-codec-derive"
-version = "3.7.4"
+version = "3.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "581c837bb6b9541ce7faa9377c20616e4fb7650f6b0f68bc93c827ee504fb7b3"
+checksum = "34b4653168b563151153c9e4c08ebed57fb8262bebfa79711552fa983c623e7a"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
