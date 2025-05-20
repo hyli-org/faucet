@@ -66,9 +66,6 @@ function App() {
   }, []);
 
   const processClick = useCallback(async (x: number, y: number) => {
-    setCount(c => c + 1);
-    addFloatingNumber(1, x, y);
-
     // Send blob tx 
     const blobTransfer = transfer("faucet", walletAddress, "oranj", BigInt(1), 1);
     const blobClick = blob_click(0);
@@ -78,7 +75,10 @@ function App() {
       identity,
       blobs: [blobTransfer, blobClick],
     }
-    nodeService.sendBlobTx(blobTx);
+    await nodeService.sendBlobTx(blobTx);
+
+    setCount(c => c + 1);
+    addFloatingNumber(1, x, y);
 
     // Add particle effect with a maximum of 20 particles
     if (buttonRef.current) {
