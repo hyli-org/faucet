@@ -79,9 +79,6 @@ function App() {
       blobs: [blobTransfer, blobClick],
     }
     nodeService.sendBlobTx(blobTx);
-    // Random wallet address 
-    const randomWallet = Math.random().toString(36).substring(2, 15);
-    setWalletAddress(randomWallet);
 
     // Add particle effect with a maximum of 20 particles
     if (buttonRef.current) {
