@@ -6,12 +6,13 @@ import { BlobTransaction } from 'hyli';
 import { useConfig } from './hooks/useConfig';
 import { transfer } from './types/smt_token';
 
-interface FloatingNumber {
+interface Orange {
   id: number;
-  value: number;
   x: number;
   y: number;
-  opacity: number;
+  rotation: number;
+  speed: number;
+  sliced: boolean;
 }
 
 interface Achievement {
@@ -23,20 +24,21 @@ interface Achievement {
 }
 
 const ACHIEVEMENTS: Achievement[] = [
-  { id: 'noob', title: '🎮 Noob Clicker', description: 'Click 10 times', threshold: 10, unlocked: false },
-  { id: 'degen', title: '🚀 True Degen', description: 'Click 100 times', threshold: 100, unlocked: false },
-  { id: 'chad', title: '💪 Gigachad', description: 'Click 500 times', threshold: 500, unlocked: false },
-  { id: 'whale', title: '🐋 Whale Alert', description: 'Click 1000 times', threshold: 1000, unlocked: false },
-  { id: 'sigma', title: '🔥 Sigma Grindset', description: 'Click 5000 times', threshold: 5000, unlocked: false },
+  { id: 'noob', title: '🎮 Noob Clicker', description: 'Slice 10 oranges', threshold: 10, unlocked: false },
+  { id: 'degen', title: '🚀 True Degen', description: 'Slice 100 oranges', threshold: 100, unlocked: false },
+  { id: 'chad', title: '💪 Gigachad', description: 'Slice 500 oranges', threshold: 500, unlocked: false },
+  { id: 'whale', title: '🐋 Whale Alert', description: 'Slice 1000 oranges', threshold: 1000, unlocked: false },
+  { id: 'sigma', title: '🔥 Sigma Grindset', description: 'Slice 5000 oranges', threshold: 5000, unlocked: false },
 ];
 
-const AUTO_CLICK_INTERVAL = 100; // 100ms between auto-clicks
+const SPAWN_INTERVAL = 1000; // 1 second between orange spawns
+const GRAVITY = 0.03;
+const INITIAL_SPEED = 1;
 
 function App() {
   const { isLoading: isLoadingConfig, error: _configError } = useConfig();
   const [count, setCount] = useState(() => Number(localStorage.getItem('count')) || 0);
-  const [autoClickers, setAutoClickers] = useState(() => Number(localStorage.getItem('autoClickers')) || 0);
-  const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumber[]>([]);
+  const [oranges, setOranges] = useState<Orange[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>(() => {
     const saved = localStorage.getItem('achievements');
     return saved ? JSON.parse(saved) : ACHIEVEMENTS;
@@ -51,21 +53,16 @@ function App() {
     }
     return localStorage.getItem('walletAddress') || '';
   });
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const nextFloatingNumberId = useRef(0);
+  const gameAreaRef = useRef<HTMLDivElement>(null);
+  const nextOrangeId = useRef(0);
+  const lastMousePosition = useRef({ x: 0, y: 0 });
+  const isMouseDown = useRef(false);
+  const slicePoints = useRef<{ x: number; y: number }[]>([]);
 
-  const addFloatingNumber = useCallback((value: number, x: number, y: number) => {
-    if (floatingNumbers.length >= 10) {
-      return;
-    }
-    const id = nextFloatingNumberId.current++;
-    setFloatingNumbers(numbers => [
-      ...numbers,
-      { id, value, x, y, opacity: 1 }
-    ]);
-  }, []);
+  const sliceOrange = useCallback(async (orangeId: number) => {
+    const orange = oranges.find(o => o.id === orangeId);
+    if (!orange || orange.sliced) return;
 
-  const processClick = useCallback(async (x: number, y: number) => {
     // Send blob tx 
     const blobTransfer = transfer("faucet", walletAddress, "oranj", BigInt(1), 1);
     const blobClick = blob_click(0);
@@ -78,55 +75,164 @@ function App() {
     await nodeService.sendBlobTx(blobTx);
 
     setCount(c => c + 1);
-    addFloatingNumber(1, x, y);
+    setOranges(prev => prev.map(o => 
+      o.id === orangeId ? { ...o, sliced: true } : o
+    ));
+  }, [oranges, walletAddress]);
 
-    // Add particle effect with a maximum of 20 particles
-    if (buttonRef.current) {
-      const existingParticles = buttonRef.current.getElementsByClassName('particles');
-      if (existingParticles.length >= 10) {
-        return;
+  const createSliceEffect = useCallback((points: { x: number; y: number }[]) => {
+    if (!gameAreaRef.current || points.length < 2) return;
+    
+    const slice = document.createElement('div');
+    slice.className = 'slice-effect';
+    
+    // Créer un SVG pour la ligne
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    
+    // Créer le chemin
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const d = points.reduce((acc, point, i) => {
+      return acc + (i === 0 ? `M ${point.x} ${point.y}` : ` L ${point.x} ${point.y}`);
+    }, '');
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', 'white');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('fill', 'none');
+    path.style.filter = 'drop-shadow(0 0 2px rgba(255,255,255,0.8))';
+    
+    svg.appendChild(path);
+    slice.appendChild(svg);
+    gameAreaRef.current.appendChild(slice);
+    
+    setTimeout(() => slice.remove(), 300);
+  }, []);
+
+  const checkSlice = useCallback((startX: number, startY: number, endX: number, endY: number) => {
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    
+    // Create slice effect
+    createSliceEffect([{ x: startX, y: startY }, { x: endX, y: endY }]);
+
+    // Check for oranges in the slice path
+    setOranges(prev => prev.map(orange => {
+      if (orange.sliced) return orange;
+
+      // Calculate distance from orange to line segment
+      const distance = Math.abs(
+        (dy * orange.x - dx * orange.y + endX * startY - endY * startX) /
+        Math.sqrt(dx * dx + dy * dy)
+      );
+
+      // If orange is close enough to the slice line
+      if (distance < 30) {
+        sliceOrange(orange.id);
+        return { ...orange, sliced: true };
       }
+      return orange;
+    }));
+  }, [createSliceEffect, sliceOrange]);
 
-      const particles = document.createElement('div');
-      particles.className = 'particles';
-      particles.style.left = `${x}px`;
-      particles.style.top = `${y}px`;
-      buttonRef.current.appendChild(particles);
-      setTimeout(() => particles.remove(), 1000);
-    }
-  }, [addFloatingNumber, walletAddress]);
+  const handleMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (!gameAreaRef.current) return;
+    const rect = gameAreaRef.current.getBoundingClientRect();
+    isMouseDown.current = true;
+    const position = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+    lastMousePosition.current = position;
+    slicePoints.current = [position];
+  }, []);
 
-  const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    const buttonRect = buttonRef.current?.getBoundingClientRect();
-    if (buttonRect) {
-      const x = event.clientX - buttonRect.left;
-      const y = event.clientY - buttonRect.top;
-      processClick(x, y);
+  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isMouseDown.current || !gameAreaRef.current) return;
+    
+    const rect = gameAreaRef.current.getBoundingClientRect();
+    const currentX = event.clientX - rect.left;
+    const currentY = event.clientY - rect.top;
+
+    // Ajouter le point au chemin
+    slicePoints.current.push({ x: currentX, y: currentY });
+
+    // Vérifier les oranges sur le chemin
+    const dx = currentX - lastMousePosition.current.x;
+    const dy = currentY - lastMousePosition.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 10) {
+      checkSlice(
+        lastMousePosition.current.x,
+        lastMousePosition.current.y,
+        currentX,
+        currentY
+      );
+      lastMousePosition.current = { x: currentX, y: currentY };
     }
-  }, [processClick]);
+  }, [checkSlice]);
+
+  const handleMouseUp = useCallback(() => {
+    if (isMouseDown.current) {
+      createSliceEffect(slicePoints.current);
+      slicePoints.current = [];
+    }
+    isMouseDown.current = false;
+  }, [createSliceEffect]);
+
+  const spawnOrange = useCallback(() => {
+    if (!gameAreaRef.current) return;
+    
+    const gameArea = gameAreaRef.current;
+    const x = Math.random() * (gameArea.clientWidth - 50);
+    const orange: Orange = {
+      id: nextOrangeId.current++,
+      x,
+      y: -50,
+      rotation: Math.random() * 360,
+      speed: INITIAL_SPEED,
+      sliced: false
+    };
+    
+    setOranges(prev => [...prev, orange]);
+  }, []);
 
   // Save state to localStorage
   useEffect(() => {
     localStorage.setItem('count', count.toString());
-    localStorage.setItem('autoClickers', autoClickers.toString());
     localStorage.setItem('achievements', JSON.stringify(achievements));
     localStorage.setItem('walletAddress', walletAddress);
-  }, [count, autoClickers, achievements]);
+  }, [count, achievements]);
 
-  // Auto clicker effect
+  // Spawn oranges
   useEffect(() => {
-    if (autoClickers > 0) {
-      const interval = setInterval(() => {
-        if (buttonRef.current) {
-          const buttonRect = buttonRef.current.getBoundingClientRect();
-          const x = Math.random() * buttonRect.width;
-          const y = Math.random() * buttonRect.height;
-          processClick(x, y);
-        }
-      }, AUTO_CLICK_INTERVAL / autoClickers);
-      return () => clearInterval(interval);
-    }
-  }, [autoClickers, processClick]);
+    const interval = setInterval(spawnOrange, SPAWN_INTERVAL);
+    return () => clearInterval(interval);
+  }, [spawnOrange]);
+
+  // Update orange positions
+  useEffect(() => {
+    const animationFrame = requestAnimationFrame(function animate() {
+      setOranges(prev => 
+        prev
+          .map(orange => ({
+            ...orange,
+            y: orange.y + orange.speed,
+            speed: orange.speed + GRAVITY,
+            rotation: orange.rotation + 2
+          }))
+          .filter(orange => orange.y < window.innerHeight + 100)
+      );
+      requestAnimationFrame(animate);
+    });
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
 
   // Achievement check effect
   useEffect(() => {
@@ -138,31 +244,12 @@ function App() {
         setAchievements(updatedAchievements);
         setLastAchievement(achievement);
 
-        // Clear achievement notification after 3 seconds
         setTimeout(() => {
           setLastAchievement(null);
         }, 3000);
       }
     });
   }, [count, achievements]);
-
-  // Floating numbers animation
-  useEffect(() => {
-    const animationFrame = requestAnimationFrame(function animate() {
-      setFloatingNumbers(numbers =>
-        numbers
-          .map(num => ({
-            ...num,
-            y: num.y - 2,
-            opacity: num.opacity - 0.02
-          }))
-          .filter(num => num.opacity > 0)
-      );
-      requestAnimationFrame(animate);
-    });
-
-    return () => cancelAnimationFrame(animationFrame);
-  }, []);
 
   useEffect(() => {
     nodeService.getBalance(walletAddress).then((balance) => {
@@ -171,15 +258,6 @@ function App() {
       setCount(0);
     });
   }, [walletAddress]);
-
-
-  const buyAutoClicker = () => {
-    setAutoClickers(ac => ac + 1);
-  };
-
-  const resetGame = useCallback(() => {
-    setAutoClickers(0);
-  }, []);
 
   if (isLoadingConfig) {
     return <div>Loading configuration...</div>;
@@ -196,7 +274,6 @@ function App() {
             localStorage.setItem('walletAddress', newAddress);
             setWalletAddress(newAddress);
 
-            // Update URL without reloading the page
             const url = new URL(window.location.href);
             if (newAddress) {
               url.searchParams.set('wallet', newAddress);
@@ -218,38 +295,26 @@ function App() {
       </div>
       <div className="score">🚀 {count.toLocaleString()} ORANJ</div>
 
-      {window.cheatMode && (
-        <div className="powerups">
-          <button
-            onClick={buyAutoClicker}
-            className="powerup-button"
-          >
-            Buy Auto Clicker
-            <div className="current">Current: {autoClickers}</div>
-          </button>
-        </div>
-      )}
-
-      <button
-        ref={buttonRef}
-        className="clicker-button"
-        onClick={handleClick}
+      <div 
+        ref={gameAreaRef}
+        className="game-area"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       >
-        <span className="button-text">CLICK ME</span>
-        {floatingNumbers.map(num => (
+        {oranges.map(orange => (
           <div
-            key={num.id}
-            className="floating-number"
+            key={orange.id}
+            className={`orange ${orange.sliced ? 'sliced' : ''}`}
             style={{
-              left: `${num.x}px`,
-              top: `${num.y}px`,
-              opacity: num.opacity,
+              left: `${orange.x}px`,
+              top: `${orange.y}px`,
+              transform: `rotate(${orange.rotation}deg)`,
             }}
-          >
-            +{num.value}
-          </div>
+          />
         ))}
-      </button>
+      </div>
 
       {lastAchievement && (
         <div className="achievement-popup">
@@ -257,15 +322,6 @@ function App() {
           <div className="achievement-title">{lastAchievement.title}</div>
           <div className="achievement-description">{lastAchievement.description}</div>
         </div>
-      )}
-
-      {window.cheatMode && (
-        <button
-          onClick={resetGame}
-          className="reset-button"
-        >
-          🔄 Stop auto clickers
-        </button>
       )}
 
       <div className="achievements">
@@ -282,7 +338,7 @@ function App() {
           ))}
         </div>
       </div>
-    </div >
+    </div>
   );
 }
 
