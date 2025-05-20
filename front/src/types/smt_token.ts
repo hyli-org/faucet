@@ -1,5 +1,5 @@
 import { BorshSchema, borshDeserialize, borshSerialize } from "borsher";
-import { Blob, StructuredBlobData, structuredBlobDataSchema } from "hyle";
+import { Blob, StructuredBlobData, structuredBlobDataSchema } from "hyli";
 
 /**
  * TypeScript : équivalent de l’enum Rust `SmtTokenAction`

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import { blob_click } from './types/faucet';
 import { nodeService } from './services/NodeService';
-import { BlobTransaction } from 'hyle';
+import { BlobTransaction } from 'hyli';
 import { useConfig } from './hooks/useConfig';
 import { transfer } from './types/smt_token';
 
