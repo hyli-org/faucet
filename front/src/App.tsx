@@ -116,7 +116,7 @@ const INITIAL_SPEED = 1;
 
 function App() {
   const { isLoading: isLoadingConfig, error: _configError } = useConfig();
-  const [debugMode, setDebugMode] = useState(false);
+  const [debugMode, _setDebugMode] = useState(false);
   const [count, setCount] = useState(() => Number(localStorage.getItem('count')) || 0);
   const [oranges, setOranges] = useState<Orange[]>([]);
   const [bombs, setBombs] = useState<Bomb[]>([]);
