@@ -2407,7 +2407,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 [[package]]
 name = "hyle-client-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=improve_prover_start_height#cde7c13f1c7aeb305aecfd19b2d5293b06ddf342"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=feat/indexer_contract_earliest_unsetted#348f35662f1bcacbe0493e6fb5f70c34935e1778"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -2427,7 +2427,7 @@ dependencies = [
 [[package]]
 name = "hyle-contract-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=improve_prover_start_height#cde7c13f1c7aeb305aecfd19b2d5293b06ddf342"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=feat/indexer_contract_earliest_unsetted#348f35662f1bcacbe0493e6fb5f70c34935e1778"
 dependencies = [
  "borsh",
  "hyle-model",
@@ -2440,7 +2440,7 @@ dependencies = [
 [[package]]
 name = "hyle-crypto"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=improve_prover_start_height#cde7c13f1c7aeb305aecfd19b2d5293b06ddf342"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=feat/indexer_contract_earliest_unsetted#348f35662f1bcacbe0493e6fb5f70c34935e1778"
 dependencies = [
  "anyhow",
  "blst",
@@ -2453,7 +2453,7 @@ dependencies = [
 [[package]]
 name = "hyle-model"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=improve_prover_start_height#cde7c13f1c7aeb305aecfd19b2d5293b06ddf342"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=feat/indexer_contract_earliest_unsetted#348f35662f1bcacbe0493e6fb5f70c34935e1778"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -2476,7 +2476,7 @@ dependencies = [
 [[package]]
 name = "hyle-modules"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=improve_prover_start_height#cde7c13f1c7aeb305aecfd19b2d5293b06ddf342"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=feat/indexer_contract_earliest_unsetted#348f35662f1bcacbe0493e6fb5f70c34935e1778"
 dependencies = [
  "anyhow",
  "anymap",
@@ -2510,7 +2510,7 @@ dependencies = [
 [[package]]
 name = "hyle-net"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=improve_prover_start_height#cde7c13f1c7aeb305aecfd19b2d5293b06ddf342"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=feat/indexer_contract_earliest_unsetted#348f35662f1bcacbe0493e6fb5f70c34935e1778"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -2536,7 +2536,7 @@ dependencies = [
 [[package]]
 name = "hyle-verifiers"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=improve_prover_start_height#cde7c13f1c7aeb305aecfd19b2d5293b06ddf342"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=feat/indexer_contract_earliest_unsetted#348f35662f1bcacbe0493e6fb5f70c34935e1778"
 dependencies = [
  "anyhow",
  "borsh",

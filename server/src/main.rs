@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use app::{AppModule, AppModuleCtx};
 use axum::Router;
-use client_sdk::rest_client::NodeApiHttpClient;
+use client_sdk::rest_client::{IndexerApiHttpClient, NodeApiHttpClient};
 use config::File;
 use contract1::Faucet;
 use contracts::CONTRACT_ELF;
@@ -65,7 +65,11 @@ async fn main() -> Result<()> {
     info!("Starting app with config: {:?}", &config);
 
     let node_url = env::var("NODE_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
+    let indexer_url =
+        env::var("INDEXER_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
     let node_client = Arc::new(NodeApiHttpClient::new(node_url).context("build node client")?);
+    let indexer_client =
+        Arc::new(IndexerApiHttpClient::new(indexer_url).context("build indexer client")?);
 
     let pk = load_pk(&config.data_directory);
     let prover = client_sdk::helpers::sp1::SP1Prover::new(pk).await;
@@ -100,7 +104,12 @@ async fn main() -> Result<()> {
         node_client,
         faucet_cn: contract_name.clone(),
     });
-    let start_height = app_ctx.node_client.get_block_height().await?;
+    let start_height = indexer_client
+        .get_indexer_contract(&contract_name)
+        .await
+        .context("getting contract")?
+        .earliest_unsettled
+        .unwrap_or(app_ctx.node_client.get_block_height().await?);
     let prover_ctx = Arc::new(AutoProverCtx {
         start_height,
         prover: Arc::new(prover),
