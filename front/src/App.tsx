@@ -5,6 +5,7 @@ import { nodeService } from './services/NodeService';
 import { BlobTransaction } from 'hyli';
 import { useConfig } from './hooks/useConfig';
 import { transfer } from './types/smt_token';
+import { Leaderboard } from './components/Leaderboard';
 
 // Mutex implementation
 class Mutex {
@@ -775,19 +776,23 @@ function App() {
         </div>
       )}
 
-      <div className="achievements">
-        <h3>🏆 Achievements</h3>
-        <div className="achievement-list">
-          {achievements.map(achievement => (
-            <div
-              key={achievement.id}
-              className={`achievement ${achievement.unlocked ? 'unlocked' : 'locked'}`}
-            >
-              <div className="achievement-title">{achievement.title}</div>
-              <div className="achievement-description">{achievement.description}</div>
-            </div>
-          ))}
+      <div className="achievements-container">
+        <div className="achievements">
+          <h3>🏆 Achievements</h3>
+          <div className="achievement-list">
+            {achievements.map(achievement => (
+              <div
+                key={achievement.id}
+                className={`achievement ${achievement.unlocked ? 'unlocked' : 'locked'}`}
+              >
+                <div className="achievement-title">{achievement.title}</div>
+                <div className="achievement-description">{achievement.description}</div>
+              </div>
+            ))}
+          </div>
         </div>
+
+        <Leaderboard />
       </div>
     </div>
   );
