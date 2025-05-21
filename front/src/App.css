@@ -330,13 +330,58 @@ body {
   position: absolute;
   width: 50px;
   height: 50px;
-  transition: transform 0.1s;
+  background-image: url(/orange.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  transform-origin: center;
+  transition: transform 0.2s ease-out;
 }
 
 .orange.sliced {
-  transform: scale(0.8) rotate(180deg);
-  opacity: 0;
-  transition: all 0.3s ease-out;
+  animation: sliceOrange 0.3s ease-out forwards;
+}
+
+@keyframes sliceOrange {
+  0% {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  100% {
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+  }
+}
+
+.orange-half {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background-image: url(/orange.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  transform-origin: center;
+  animation: flyAway 0.5s ease-out forwards;
+}
+
+.orange-half.top {
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+  transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(-10px);
+}
+
+.orange-half.bottom {
+  clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+  transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(10px);
+}
+
+@keyframes flyAway {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(var(--fly-distance));
+  }
 }
 
 .score {
@@ -565,5 +610,35 @@ pre {
   100% {
     opacity: 0;
     stroke-width: 0;
+  }
+}
+
+.orange-juice {
+  position: absolute;
+  pointer-events: none;
+  width: 8px;
+  height: 8px;
+  background: #FF8C00;
+  border-radius: 50%;
+  opacity: 0.8;
+  filter: blur(1px);
+  transform-origin: center;
+}
+
+@keyframes juiceSplash {
+  0% {
+    transform: scale(0) translate(0, 0);
+    opacity: 0.8;
+  }
+  20% {
+    transform: scale(1) translate(var(--x), var(--y));
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1) translate(
+      calc(var(--x) + var(--gravity-x)),
+      calc(var(--y) + var(--gravity-y))
+    );
+    opacity: 0;
   }
 }

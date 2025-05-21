@@ -23,6 +23,15 @@ interface Achievement {
   unlocked: boolean;
 }
 
+interface JuiceParticle {
+  id: number;
+  x: number;
+  y: number;
+  velocityX: number;
+  velocityY: number;
+  time: number;
+}
+
 const ACHIEVEMENTS: Achievement[] = [
   { id: 'noob', title: '🎮 Noob Clicker', description: 'Slice 10 oranges', threshold: 10, unlocked: false },
   { id: 'degen', title: '🚀 True Degen', description: 'Slice 100 oranges', threshold: 100, unlocked: false },
@@ -61,6 +70,40 @@ function App() {
   const isMouseDown = useRef(false);
   const slicePoints = useRef<{ x: number; y: number }[]>([]);
   const sliceStartTime = useRef<number>(0);
+  const [juiceParticles, setJuiceParticles] = useState<JuiceParticle[]>([]);
+  const nextJuiceId = useRef(0);
+
+  const createJuiceEffect = useCallback((x: number, y: number) => {
+    const particles: JuiceParticle[] = [];
+    const particleCount = 12; // Nombre de particules de jus
+    const initialSpeed = 3; // Vitesse initiale
+    
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (i * 360 / particleCount) + Math.random() * 30 - 15; // Angle avec un peu de variation
+      const speed = initialSpeed + Math.random() * 5; // Plus de variation dans la vitesse
+      const radian = angle * Math.PI / 180;
+      
+      // Calcul des composantes de la vitesse initiale
+      const velocityX = Math.cos(radian) * speed;
+      const velocityY = Math.sin(radian) * speed;
+      
+      particles.push({
+        id: nextJuiceId.current++,
+        x,
+        y,
+        velocityX,
+        velocityY,
+        time: 0
+      });
+    }
+    
+    setJuiceParticles(prev => [...prev, ...particles]);
+    
+    // Nettoyer les particules après l'animation
+    setTimeout(() => {
+      setJuiceParticles(prev => prev.filter(p => !particles.some(newP => newP.id === p.id)));
+    }, 1500);
+  }, []);
 
   const sliceOrange = useCallback(async (orangeId: number) => {
     const orange = oranges.find(o => o.id === orangeId);
@@ -68,6 +111,9 @@ function App() {
     console.log('sliceOrange', orangeId);
 
     processingOranges.current.add(orangeId);
+
+    // Créer l'effet de jus
+    createJuiceEffect(orange.x, orange.y);
 
     // Send blob tx 
     const blobTransfer = transfer("faucet", walletAddress, "oranj", BigInt(1), 1);
@@ -86,7 +132,7 @@ function App() {
     ));
     
     processingOranges.current.delete(orangeId);
-  }, [oranges, walletAddress]);
+  }, [oranges, walletAddress, createJuiceEffect]);
 
   const createSliceEffect = useCallback((points: { x: number; y: number }[]) => {
     if (!gameAreaRef.current || points.length < 2) return;
@@ -303,6 +349,39 @@ function App() {
     });
   }, [walletAddress]);
 
+  // Mettre à jour la position des particules avec la balistique
+  useEffect(() => {
+    const animationFrame = requestAnimationFrame(function animate() {
+      setJuiceParticles(prev => 
+        prev.map(particle => {
+          const time = particle.time + 0.016; // ~60fps
+          // Mise à jour de la vitesse verticale avec la gravité (augmentée)
+          const currentVelocityY = particle.velocityY + GRAVITY * 3;
+          
+          // Mise à jour de la position
+          const newX = particle.x + particle.velocityX;
+          const newY = particle.y + currentVelocityY;
+          
+          if (particle.id === 1) {
+            console.log('currentVelocityY', currentVelocityY);
+            console.log('GRAVITY', GRAVITY);
+          }
+          
+          return {
+            ...particle,
+            x: newX,
+            y: newY,
+            velocityY: currentVelocityY,
+            time
+          };
+        })
+      );
+      requestAnimationFrame(animate);
+    });
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
+
   if (isLoadingConfig) {
     return <div>Loading configuration...</div>;
   }
@@ -371,21 +450,51 @@ function App() {
           </div>
         )}
         {oranges.map(orange => (
+          <div key={orange.id}>
+            <div
+              className={`orange ${orange.sliced ? 'sliced' : ''}`}
+              style={{
+                left: `${orange.x}px`,
+                top: `${orange.y}px`,
+                '--rotation': `${orange.rotation}deg`,
+                transform: `translate(-50%, -50%) rotate(${orange.rotation}deg)`,
+              } as React.CSSProperties}
+            />
+            {orange.sliced && (
+              <>
+                <div
+                  className="orange-half top"
+                  style={{
+                    left: `${orange.x}px`,
+                    top: `${orange.y}px`,
+                    '--rotation': `${orange.rotation}deg`,
+                    '--fly-distance': '-50px',
+                    transform: `translate(-50%, -50%) rotate(${orange.rotation}deg)`,
+                  } as React.CSSProperties}
+                />
+                <div
+                  className="orange-half bottom"
+                  style={{
+                    left: `${orange.x}px`,
+                    top: `${orange.y}px`,
+                    '--rotation': `${orange.rotation}deg`,
+                    '--fly-distance': '50px',
+                    transform: `translate(-50%, -50%) rotate(${orange.rotation}deg)`,
+                  } as React.CSSProperties}
+                />
+              </>
+            )}
+          </div>
+        ))}
+        {juiceParticles.map(particle => (
           <div
-            key={orange.id}
-            className={`orange ${orange.sliced ? 'sliced' : ''}`}
+            key={particle.id}
+            className="orange-juice"
             style={{
-              left: `${orange.x}px`,
-              top: `${orange.y}px`,
-              transform: `translate(-50%, -50%) rotate(${orange.rotation}deg)`,
-              backgroundImage: 'url(/orange.svg)',
-              backgroundSize: 'contain',
-              backgroundRepeat: 'no-repeat',
-              width: '50px',
-              height: '50px',
-              position: 'absolute',
-              pointerEvents: 'none'
-            }}
+              left: `${particle.x}px`,
+              top: `${particle.y}px`,
+              opacity: Math.max(0, 1 - particle.time / 1.5) // Fade out progressif
+            } as React.CSSProperties}
           />
         ))}
       </div>
