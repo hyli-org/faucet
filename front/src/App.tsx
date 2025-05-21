@@ -31,7 +31,7 @@ const ACHIEVEMENTS: Achievement[] = [
   { id: 'sigma', title: '🔥 Sigma Grindset', description: 'Slice 5000 oranges', threshold: 5000, unlocked: false },
 ];
 
-const SPAWN_INTERVAL = 1000; // 1 second between orange spawns
+const SPAWN_INTERVAL = 500;
 const GRAVITY = 0.03;
 const INITIAL_SPEED = 1;
 
@@ -40,6 +40,7 @@ function App() {
   const [debugMode, setDebugMode] = useState(false);
   const [count, setCount] = useState(() => Number(localStorage.getItem('count')) || 0);
   const [oranges, setOranges] = useState<Orange[]>([]);
+  const processingOranges = useRef<Set<number>>(new Set());
   const [achievements, setAchievements] = useState<Achievement[]>(() => {
     const saved = localStorage.getItem('achievements');
     return saved ? JSON.parse(saved) : ACHIEVEMENTS;
@@ -63,7 +64,10 @@ function App() {
 
   const sliceOrange = useCallback(async (orangeId: number) => {
     const orange = oranges.find(o => o.id === orangeId);
-    if (!orange || orange.sliced) return;
+    if (!orange || orange.sliced || processingOranges.current.has(orangeId)) return;
+    console.log('sliceOrange', orangeId);
+
+    processingOranges.current.add(orangeId);
 
     // Send blob tx 
     const blobTransfer = transfer("faucet", walletAddress, "oranj", BigInt(1), 1);
@@ -80,6 +84,8 @@ function App() {
     setOranges(prev => prev.map(o => 
       o.id === orangeId ? { ...o, sliced: true } : o
     ));
+    
+    processingOranges.current.delete(orangeId);
   }, [oranges, walletAddress]);
 
   const createSliceEffect = useCallback((points: { x: number; y: number }[]) => {
@@ -124,7 +130,7 @@ function App() {
 
     // Check for oranges in the slice path
     setOranges(prev => prev.map(orange => {
-      if (orange.sliced) return orange;
+      if (orange.sliced || processingOranges.current.has(orange.id)) return orange;
 
       // Calculate distance from orange to line segment
       const lineLength = Math.sqrt(dx * dx + dy * dy);
@@ -144,12 +150,10 @@ function App() {
         Math.pow(orange.x - closestX, 2) + Math.pow(orange.y - closestY, 2)
       );
 
-      console.log(distance);
-
       // If orange is close enough to the slice line (reduced threshold)
       if (distance < 25) {
         sliceOrange(orange.id);
-        return { ...orange, sliced: true };
+        return orange;
       }
       return orange;
     }));
@@ -211,8 +215,7 @@ function App() {
   }, [createSliceEffect]);
 
   const spawnOrange = useCallback(() => {
-    console.log('hidden', document.hidden)
-    if (!gameAreaRef.current || document.hidden) return;
+    if (!gameAreaRef.current) return;
     
     // In debug mode, only spawn if there are no oranges
     if (debugMode && oranges.length > 0) return;
@@ -240,38 +243,21 @@ function App() {
 
   // Spawn oranges
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    const handleVisibilityChange = () => {
-      console.log('handleVisibilityChange', document.hidden);
-      if (document.hidden) {
-        if (interval) {
-          clearInterval(interval);
-        }
-      } else {
-        interval = setInterval(spawnOrange, SPAWN_INTERVAL);
-      }
-    };
-
-    // Initial setup
-    if (!document.hidden) {
-      interval = setInterval(spawnOrange, SPAWN_INTERVAL);
-    }
-
-    // Add event listener
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+    // This effect is now handled in the animation frame
   }, [spawnOrange]);
 
   // Update orange positions
   useEffect(() => {
+    let lastSpawnTime = performance.now();
     const animationFrame = requestAnimationFrame(function animate() {
+      const currentTime = performance.now();
+      const timeSinceLastSpawn = currentTime - lastSpawnTime;
+
+      if (timeSinceLastSpawn >= SPAWN_INTERVAL && !document.hidden) {
+        spawnOrange();
+        lastSpawnTime = currentTime;
+      }
+
       setOranges(prev => 
         prev
           .map(orange => ({
@@ -290,7 +276,7 @@ function App() {
 
   // Achievement check effect
   useEffect(() => {
-    achievements.forEach(achievement => {
+    [...achievements].reverse().forEach(achievement => {
       if (!achievement.unlocked && count >= achievement.threshold) {
         const updatedAchievements = achievements.map(a =>
           a.id === achievement.id ? { ...a, unlocked: true } : a
