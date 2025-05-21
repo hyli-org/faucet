@@ -381,6 +381,21 @@ function App() {
     slicePoints.current = [position];
   }, []);
 
+  const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (!gameAreaRef.current) return;
+    event.preventDefault(); // Prevent scrolling while slicing
+    const rect = gameAreaRef.current.getBoundingClientRect();
+    isMouseDown.current = true;
+    sliceStartTime.current = Date.now();
+    const touch = event.touches[0];
+    const position = {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top
+    };
+    lastMousePosition.current = position;
+    slicePoints.current = [position];
+  }, []);
+
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (!isMouseDown.current || !gameAreaRef.current) return;
     
@@ -415,7 +430,51 @@ function App() {
     }
   }, [checkSlice, createSliceEffect]);
 
+  const handleTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (!isMouseDown.current || !gameAreaRef.current) return;
+    event.preventDefault(); // Prevent scrolling while slicing
+    
+    // Check if slice duration exceeds 200ms
+    if (Date.now() - sliceStartTime.current > 200) {
+      isMouseDown.current = false;
+      createSliceEffect(slicePoints.current);
+      slicePoints.current = [];
+      return;
+    }
+    
+    const rect = gameAreaRef.current.getBoundingClientRect();
+    const touch = event.touches[0];
+    const currentX = touch.clientX - rect.left;
+    const currentY = touch.clientY - rect.top;
+
+    // Ajouter le point au chemin
+    slicePoints.current.push({ x: currentX, y: currentY });
+
+    // Vérifier les oranges sur le chemin
+    const dx = currentX - lastMousePosition.current.x;
+    const dy = currentY - lastMousePosition.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 10) {
+      checkSlice(
+        lastMousePosition.current.x,
+        lastMousePosition.current.y,
+        currentX,
+        currentY
+      );
+      lastMousePosition.current = { x: currentX, y: currentY };
+    }
+  }, [checkSlice, createSliceEffect]);
+
   const handleMouseUp = useCallback(() => {
+    if (isMouseDown.current) {
+      createSliceEffect(slicePoints.current);
+      slicePoints.current = [];
+    }
+    isMouseDown.current = false;
+  }, [createSliceEffect]);
+
+  const handleTouchEnd = useCallback(() => {
     if (isMouseDown.current) {
       createSliceEffect(slicePoints.current);
       slicePoints.current = [];
@@ -639,6 +698,10 @@ function App() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ touchAction: 'none' }} // Prevent default touch actions
       >
         {!walletAddress && (
           <div 
