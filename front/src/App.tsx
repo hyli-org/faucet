@@ -215,7 +215,11 @@ function App() {
   }, [createSliceEffect]);
 
   const spawnOrange = useCallback(() => {
+    console.log('spawnOrange', walletAddress);
     if (!gameAreaRef.current) return;
+    
+    // Don't spawn if no wallet address is set
+    if (!walletAddress) return;
     
     // In debug mode, only spawn if there are no oranges
     if (debugMode && oranges.length > 0) return;
@@ -232,7 +236,7 @@ function App() {
     };
     
     setOranges(prev => [...prev, orange]);
-  }, [debugMode, oranges.length]);
+  }, [debugMode, oranges.length, walletAddress]);
 
   // Save state to localStorage
   useEffect(() => {
@@ -343,6 +347,29 @@ function App() {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
+        {!walletAddress && (
+          <div 
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: '20px',
+              borderRadius: '10px',
+              textAlign: 'center',
+              zIndex: 1000,
+              color: '#ff6b6b',
+              maxWidth: '80%',
+              boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)'
+            }}
+          >
+            <h2 style={{ margin: '0 0 10px 0' }}>🎮 Ready to Play?</h2>
+            <p style={{ margin: '0', fontSize: '1.1em' }}>
+              Please enter your wallet address above to start slicing oranges and earning ORANJ tokens!
+            </p>
+          </div>
+        )}
         {oranges.map(orange => (
           <div
             key={orange.id}
