@@ -17,7 +17,7 @@ use hyle_modules::{
     utils::logger::setup_tracing,
 };
 use prometheus::Registry;
-use sdk::{api::NodeInfo, info, BlockHeight, ContractName, ZkContract};
+use sdk::{api::NodeInfo, info, ContractName, ZkContract};
 use sp1_sdk::{Prover, SP1ProvingKey};
 use std::{
     env,
