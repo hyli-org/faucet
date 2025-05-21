@@ -51,8 +51,7 @@ export function Leaderboard() {
     };
 
     fetchLeaderboard();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchLeaderboard, 30000);
+    const interval = setInterval(fetchLeaderboard, 10000);
     return () => clearInterval(interval);
   }, []);
 
