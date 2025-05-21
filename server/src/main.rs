@@ -17,11 +17,11 @@ use hyle_modules::{
     utils::logger::setup_tracing,
 };
 use prometheus::Registry;
-use sdk::{api::NodeInfo, info, ContractName, ZkContract};
+use sdk::{api::NodeInfo, info, BlockHeight, ContractName, ZkContract};
 use sp1_sdk::{Prover, SP1ProvingKey};
 use std::{
     env,
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
 use tracing::error;
@@ -67,8 +67,8 @@ async fn main() -> Result<()> {
     let node_url = env::var("NODE_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
     let node_client = Arc::new(NodeApiHttpClient::new(node_url).context("build node client")?);
 
-    info!("Building Proving Key");
-    let prover = client_sdk::helpers::sp1::SP1Prover::new(CONTRACT_ELF).await;
+    let pk = load_pk(&config.data_directory);
+    let prover = client_sdk::helpers::sp1::SP1Prover::new(pk).await;
 
     info!("Init contract on node");
     let contracts = vec![init::ContractInit {
@@ -190,8 +190,28 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-pub fn load_pk() -> SP1ProvingKey {
-    let client = sp1_sdk::ProverClient::builder().mock().build();
-    let (pk, _) = client.setup(contracts::CONTRACT_ELF);
+pub fn load_pk(data_directory: &Path) -> SP1ProvingKey {
+    let pk_path = data_directory.join("proving_key.bin");
+
+    if pk_path.exists() {
+        info!("Loading proving key from disk");
+        return std::fs::read(&pk_path)
+            .map(|bytes| bincode::deserialize(&bytes).expect("Failed to deserialize proving key"))
+            .expect("Failed to read proving key from disk");
+    } else if let Err(e) = std::fs::create_dir_all(data_directory) {
+        error!("Failed to create data directory: {}", e);
+    }
+
+    info!("Building proving key");
+    let client = sp1_sdk::ProverClient::builder().cpu().build();
+    let (pk, _) = client.setup(CONTRACT_ELF);
+
+    if let Err(e) = std::fs::write(
+        &pk_path,
+        bincode::serialize(&pk).expect("Failed to serialize proving key"),
+    ) {
+        error!("Failed to save proving key to disk: {}", e);
+    }
+
     pk
 }
