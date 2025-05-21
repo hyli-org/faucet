@@ -6,7 +6,66 @@ import { BlobTransaction } from 'hyli';
 import { useConfig } from './hooks/useConfig';
 import { transfer } from './types/smt_token';
 
+// Mutex implementation
+class Mutex {
+  private locked: boolean = false;
+  private queue: Array<() => void> = [];
+
+  async acquire(): Promise<void> {
+    if (!this.locked) {
+      this.locked = true;
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve) => {
+      this.queue.push(resolve);
+    });
+  }
+
+  release(): void {
+    if (this.queue.length > 0) {
+      const next = this.queue.shift();
+      if (next) next();
+    } else {
+      this.locked = false;
+    }
+  }
+}
+
+// Add global mutexes
+declare global {
+  interface Window {
+    orangeMutex: Mutex;
+    bombMutex: Mutex;
+    slicedOranges: Set<number>;
+    slicedBombs: Set<number>;
+  }
+}
+
+// Initialize global mutexes
+if (!window.orangeMutex) {
+  window.orangeMutex = new Mutex();
+}
+if (!window.bombMutex) {
+  window.bombMutex = new Mutex();
+}
+if (!window.slicedOranges) {
+  window.slicedOranges = new Set();
+}
+if (!window.slicedBombs) {
+  window.slicedBombs = new Set();
+}
+
 interface Orange {
+  id: number;
+  x: number;
+  y: number;
+  rotation: number;
+  speed: number;
+  sliced: boolean;
+}
+
+interface Bomb {
   id: number;
   x: number;
   y: number;
@@ -49,7 +108,16 @@ function App() {
   const [debugMode, setDebugMode] = useState(false);
   const [count, setCount] = useState(() => Number(localStorage.getItem('count')) || 0);
   const [oranges, setOranges] = useState<Orange[]>([]);
-  const processingOranges = useRef<Set<number>>(new Set());
+  const [bombs, setBombs] = useState<Bomb[]>([]);
+  const [bombPenalty, setBombPenalty] = useState(() => Number(localStorage.getItem('bombPenalty')) || 0);
+  const gameAreaRef = useRef<HTMLDivElement>(null);
+  const nextOrangeId = useRef(0);
+  const lastMousePosition = useRef({ x: 0, y: 0 });
+  const isMouseDown = useRef(false);
+  const slicePoints = useRef<{ x: number; y: number }[]>([]);
+  const sliceStartTime = useRef<number>(0);
+  const [juiceParticles, setJuiceParticles] = useState<JuiceParticle[]>([]);
+  const nextJuiceId = useRef(0);
   const [achievements, setAchievements] = useState<Achievement[]>(() => {
     const saved = localStorage.getItem('achievements');
     return saved ? JSON.parse(saved) : ACHIEVEMENTS;
@@ -64,14 +132,6 @@ function App() {
     }
     return localStorage.getItem('walletAddress') || '';
   });
-  const gameAreaRef = useRef<HTMLDivElement>(null);
-  const nextOrangeId = useRef(0);
-  const lastMousePosition = useRef({ x: 0, y: 0 });
-  const isMouseDown = useRef(false);
-  const slicePoints = useRef<{ x: number; y: number }[]>([]);
-  const sliceStartTime = useRef<number>(0);
-  const [juiceParticles, setJuiceParticles] = useState<JuiceParticle[]>([]);
-  const nextJuiceId = useRef(0);
 
   const createJuiceEffect = useCallback((x: number, y: number) => {
     const particles: JuiceParticle[] = [];
@@ -105,34 +165,69 @@ function App() {
     }, 1500);
   }, []);
 
-  const sliceOrange = useCallback(async (orangeId: number) => {
-    const orange = oranges.find(o => o.id === orangeId);
-    if (!orange || orange.sliced || processingOranges.current.has(orangeId)) return;
-    console.log('sliceOrange', orangeId);
+  const sliceBomb = useCallback(async (bombId: number) => {
+    try {
+      await window.bombMutex.acquire();
+      const bomb = bombs.find(b => b.id === bombId);
+      if (!bomb || bomb.sliced || window.slicedBombs.has(bombId)) return;
+      
+      // Create explosion effect
+      createJuiceEffect(bomb.x, bomb.y);
 
-    processingOranges.current.add(orangeId);
+      // Apply cumulative penalty
+      const newPenalty = bombPenalty + 10;
+      setBombPenalty(newPenalty);
+      localStorage.setItem('bombPenalty', newPenalty.toString());
+      
+      setBombs(prev => prev.map(b => 
+        b.id === bombId ? { ...b, sliced: true } : b
+      ));
 
-    // Créer l'effet de jus
-    createJuiceEffect(orange.x, orange.y);
-
-    // Send blob tx 
-    const blobTransfer = transfer("faucet", walletAddress, "oranj", BigInt(1), 1);
-    const blobClick = blob_click(0);
-
-    const identity = `${walletAddress}@${blobClick.contract_name}`;
-    const blobTx: BlobTransaction = {
-      identity,
-      blobs: [blobTransfer, blobClick],
+      window.slicedBombs.add(bombId);
+    } finally {
+      window.bombMutex.release();
     }
-    await nodeService.sendBlobTx(blobTx);
+  }, [bombs, bombPenalty]);
 
-    setCount(c => c + 1);
-    setOranges(prev => prev.map(o => 
-      o.id === orangeId ? { ...o, sliced: true } : o
-    ));
-    
-    processingOranges.current.delete(orangeId);
-  }, [oranges, walletAddress, createJuiceEffect]);
+  const sliceOrange = useCallback(async (orangeId: number) => {
+    try {
+      await window.orangeMutex.acquire();
+      const orange = oranges.find(o => o.id === orangeId);
+      if (!orange || orange.sliced || window.slicedOranges.has(orangeId)) return;
+
+      // Créer l'effet de jus
+      createJuiceEffect(orange.x, orange.y);
+
+      // Only send blob tx if no bomb penalty is active
+      if (bombPenalty === 0) {
+        // Send blob tx 
+        const blobTransfer = transfer("faucet", walletAddress, "oranj", BigInt(1), 1);
+        const blobClick = blob_click(0);
+
+        const identity = `${walletAddress}@${blobClick.contract_name}`;
+        const blobTx: BlobTransaction = {
+          identity,
+          blobs: [blobTransfer, blobClick],
+        }
+        await nodeService.sendBlobTx(blobTx);
+
+        setCount(c => c + 1);
+      } else {
+        // Reduce bomb penalty
+        const newPenalty = bombPenalty - 1;
+        setBombPenalty(newPenalty);
+        localStorage.setItem('bombPenalty', newPenalty.toString());
+      }
+
+      setOranges(prev => prev.map(o => 
+        o.id === orangeId ? { ...o, sliced: true } : o
+      ));
+
+      window.slicedOranges.add(orangeId);
+    } finally {
+      window.orangeMutex.release();
+    }
+  }, [oranges, bombPenalty, walletAddress]);
 
   const createSliceEffect = useCallback((points: { x: number; y: number }[]) => {
     if (!gameAreaRef.current || points.length < 2) return;
@@ -169,14 +264,13 @@ function App() {
   const checkSlice = useCallback((startX: number, startY: number, endX: number, endY: number) => {
     const dx = endX - startX;
     const dy = endY - startY;
-    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
     
     // Create slice effect
     createSliceEffect([{ x: startX, y: startY }, { x: endX, y: endY }]);
 
-    // Check for oranges in the slice path
+    // Check for oranges and bombs in the slice path
     setOranges(prev => prev.map(orange => {
-      if (orange.sliced || processingOranges.current.has(orange.id)) return orange;
+      if (orange.sliced) return orange;
 
       // Calculate distance from orange to line segment
       const lineLength = Math.sqrt(dx * dx + dy * dy);
@@ -196,14 +290,39 @@ function App() {
         Math.pow(orange.x - closestX, 2) + Math.pow(orange.y - closestY, 2)
       );
 
-      // If orange is close enough to the slice line (reduced threshold)
+      // If orange is close enough to the slice line
       if (distance < 25) {
         sliceOrange(orange.id);
         return orange;
       }
       return orange;
     }));
-  }, [createSliceEffect, sliceOrange]);
+
+    // Check for bombs
+    setBombs(prev => prev.map(bomb => {
+      if (bomb.sliced) return bomb;
+
+      const lineLength = Math.sqrt(dx * dx + dy * dy);
+      if (lineLength === 0) return bomb;
+
+      const t = Math.max(0, Math.min(1, (
+        (bomb.x - startX) * dx + (bomb.y - startY) * dy
+      ) / (lineLength * lineLength)));
+
+      const closestX = startX + t * dx;
+      const closestY = startY + t * dy;
+
+      const distance = Math.sqrt(
+        Math.pow(bomb.x - closestX, 2) + Math.pow(bomb.y - closestY, 2)
+      );
+
+      if (distance < 25) {
+        sliceBomb(bomb.id);
+        return bomb;
+      }
+      return bomb;
+    }));
+  }, [createSliceEffect, sliceOrange, sliceBomb]);
 
   const handleMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (!gameAreaRef.current) return;
@@ -272,16 +391,29 @@ function App() {
     
     const gameArea = gameAreaRef.current;
     const x = Math.random() * (gameArea.clientWidth - 50);
-    const orange: Orange = {
-      id: nextOrangeId.current++,
-      x,
-      y: -50,
-      rotation: Math.random() * 360,
-      speed: INITIAL_SPEED,
-      sliced: false
-    };
     
-    setOranges(prev => [...prev, orange]);
+    // 20% chance to spawn a bomb instead of an orange
+    if (Math.random() < 0.2) {
+      const bomb: Bomb = {
+        id: nextOrangeId.current++,
+        x,
+        y: -50,
+        rotation: Math.random() * 360,
+        speed: INITIAL_SPEED,
+        sliced: false
+      };
+      setBombs(prev => [...prev, bomb]);
+    } else {
+      const orange: Orange = {
+        id: nextOrangeId.current++,
+        x,
+        y: -50,
+        rotation: Math.random() * 360,
+        speed: INITIAL_SPEED,
+        sliced: false
+      };
+      setOranges(prev => [...prev, orange]);
+    }
   }, [debugMode, oranges.length, walletAddress]);
 
   // Save state to localStorage
@@ -289,14 +421,15 @@ function App() {
     localStorage.setItem('count', count.toString());
     localStorage.setItem('achievements', JSON.stringify(achievements));
     localStorage.setItem('walletAddress', walletAddress);
-  }, [count, achievements]);
+    localStorage.setItem('bombPenalty', bombPenalty.toString());
+  }, [count, achievements, walletAddress, bombPenalty]);
 
   // Spawn oranges
   useEffect(() => {
     // This effect is now handled in the animation frame
   }, [spawnOrange]);
 
-  // Update orange positions
+  // Update orange and bomb positions
   useEffect(() => {
     let lastSpawnTime = performance.now();
     const animationFrame = requestAnimationFrame(function animate() {
@@ -318,6 +451,18 @@ function App() {
           }))
           .filter(orange => orange.y < window.innerHeight + 100)
       );
+
+      setBombs(prev => 
+        prev
+          .map(bomb => ({
+            ...bomb,
+            y: bomb.y + bomb.speed,
+            speed: bomb.speed + GRAVITY,
+            rotation: bomb.rotation + 2
+          }))
+          .filter(bomb => bomb.y < window.innerHeight + 100)
+      );
+
       requestAnimationFrame(animate);
     });
 
@@ -361,11 +506,6 @@ function App() {
           // Mise à jour de la position
           const newX = particle.x + particle.velocityX;
           const newY = particle.y + currentVelocityY;
-          
-          if (particle.id === 1) {
-            console.log('currentVelocityY', currentVelocityY);
-            console.log('GRAVITY', GRAVITY);
-          }
           
           return {
             ...particle,
@@ -416,7 +556,14 @@ function App() {
           }}
         />
       </div>
-      <div className="score">🚀 {count.toLocaleString()} ORANJ</div>
+      <div className="score">
+        🚀 {count.toLocaleString()} ORANJ
+        {bombPenalty > 0 && (
+          <span style={{ color: '#ff4444', marginLeft: '10px' }}>
+            💣 Penalty: {bombPenalty} oranges
+          </span>
+        )}
+      </div>
 
       <div 
         ref={gameAreaRef}
@@ -486,6 +633,43 @@ function App() {
             )}
           </div>
         ))}
+        {bombs.map(bomb => (
+          <div key={bomb.id}>
+            <div
+              className={`bomb ${bomb.sliced ? 'sliced' : ''}`}
+              style={{
+                left: `${bomb.x}px`,
+                top: `${bomb.y}px`,
+                '--rotation': `${bomb.rotation}deg`,
+                transform: `translate(-50%, -50%) rotate(${bomb.rotation}deg)`,
+              } as React.CSSProperties}
+            />
+            {bomb.sliced && (
+              <>
+                <div
+                  className="bomb-half top"
+                  style={{
+                    left: `${bomb.x}px`,
+                    top: `${bomb.y}px`,
+                    '--rotation': `${bomb.rotation}deg`,
+                    '--fly-distance': '-50px',
+                    transform: `translate(-50%, -50%) rotate(${bomb.rotation}deg)`,
+                  } as React.CSSProperties}
+                />
+                <div
+                  className="bomb-half bottom"
+                  style={{
+                    left: `${bomb.x}px`,
+                    top: `${bomb.y}px`,
+                    '--rotation': `${bomb.rotation}deg`,
+                    '--fly-distance': '50px',
+                    transform: `translate(-50%, -50%) rotate(${bomb.rotation}deg)`,
+                  } as React.CSSProperties}
+                />
+              </>
+            )}
+          </div>
+        ))}
         {juiceParticles.map(particle => (
           <div
             key={particle.id}
@@ -493,7 +677,7 @@ function App() {
             style={{
               left: `${particle.x}px`,
               top: `${particle.y}px`,
-              opacity: Math.max(0, 1 - particle.time / 1.5) // Fade out progressif
+              opacity: Math.max(0, 1 - particle.time / 1.5)
             } as React.CSSProperties}
           />
         ))}

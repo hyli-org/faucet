@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bomb body -->
+  <circle cx="25" cy="25" r="20" fill="#333" stroke="#444" stroke-width="2"/>
+  
+  <!-- Fuse -->
+  <path d="M25 5 C25 5, 30 0, 35 5" stroke="#666" stroke-width="3" fill="none"/>
+  
+  <!-- Spark -->
+  <circle cx="35" cy="5" r="3" fill="#ff4444">
+    <animate attributeName="opacity" values="1;0.5;1" dur="0.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Shine -->
+  <circle cx="20" cy="20" r="5" fill="#444" opacity="0.3"/>
+  
+  <!-- Fuse holder -->
+  <rect x="23" y="5" width="4" height="8" fill="#666" rx="2"/>
+</svg>

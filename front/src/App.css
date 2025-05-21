@@ -642,3 +642,41 @@ pre {
     opacity: 0;
   }
 }
+
+.bomb {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background-image: url(/bomb.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  transform-origin: center;
+  transition: transform 0.2s ease-out;
+}
+
+.bomb.sliced {
+  animation: sliceOrange 0.3s ease-out forwards;
+}
+
+.bomb-half {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background-image: url(/bomb.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  transform-origin: center;
+  animation: flyAway 0.5s ease-out forwards;
+}
+
+.bomb-half.top {
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+  transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(-10px);
+}
+
+.bomb-half.bottom {
+  clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+  transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(10px);
+}
