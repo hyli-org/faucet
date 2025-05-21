@@ -1,0 +1,73 @@
+.leaderboard {
+  position: relative;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  border: 2px solid #FFD700;
+  color: #FFD700;
+}
+
+.refresh-progress {
+  height: 3px;
+  background: linear-gradient(90deg, #FFD700, #FFA500);
+  transition: width 0.1s linear;
+  border-radius: 3px 0 0 3px;
+  margin-bottom: 10px;
+}
+
+.leaderboard h3 {
+  margin: 0 0 15px 0;
+  text-align: center;
+  color: #FFD700;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.leaderboard-entry {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.leaderboard-entry:hover {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #FFD700;
+}
+
+.leaderboard-entry .rank {
+  font-weight: bold;
+  color: #FFD700;
+}
+
+.leaderboard-entry .address {
+  font-family: monospace;
+  color: #FFD700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-entry .balance {
+  font-weight: bold;
+  color: #FFD700;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 20px;
+  color: #FFD700;
+}
+
+.error {
+  color: #ff4444;
+} 

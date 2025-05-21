@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { nodeService } from '../services/NodeService';
+import './Leaderboard.css';
 
 interface LeaderboardEntry {
   address: string;
@@ -18,13 +19,12 @@ interface IndexerResponse {
 
 export function Leaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshProgress, setRefreshProgress] = useState(0);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        setIsLoading(true);
         setError(null);
         const response = await nodeService.indexer.get<IndexerResponse>(
           'v1/indexer/contract/oranj/state',
@@ -42,27 +42,28 @@ export function Leaderboard() {
           .slice(0, 15);
 
         setEntries(sortedEntries);
+        setRefreshProgress(0);
       } catch (err) {
         setError('Failed to load leaderboard');
         console.error('Error fetching leaderboard:', err);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchLeaderboard();
     const interval = setInterval(fetchLeaderboard, 10000);
-    return () => clearInterval(interval);
-  }, []);
+    
+    // Progress bar animation
+    const progressInterval = setInterval(() => {
+      setRefreshProgress(prev => {
+        return prev + 1;
+      });
+    }, 100);
 
-  if (isLoading) {
-    return (
-      <div className="leaderboard">
-        <h3>🏆 Leaderboard</h3>
-        <div className="loading">Loading...</div>
-      </div>
-    );
-  }
+    return () => {
+      clearInterval(interval);
+      clearInterval(progressInterval);
+    };
+  }, []);
 
   if (error) {
     return (
@@ -76,6 +77,7 @@ export function Leaderboard() {
   return (
     <div className="leaderboard">
       <h3>🏆 Leaderboard</h3>
+      <div className="refresh-progress" style={{ width: `${refreshProgress}%` }} />
       <div className="leaderboard-list">
         {entries.map((entry, index) => (
           <div key={entry.address} className="leaderboard-entry">
