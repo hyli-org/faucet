@@ -329,39 +329,13 @@ body {
   position: absolute;
   width: 50px;
   height: 50px;
-  background: radial-gradient(circle at 30% 30%, #FF6B6B, #FF0000);
-  border-radius: 50%;
-  box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2);
   transition: transform 0.1s;
-}
-
-.orange::before {
-  content: '';
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 8px;
-  height: 8px;
-  background: #FFD700;
-  border-radius: 50%;
-  box-shadow: 15px 15px 0 #FFD700;
 }
 
 .orange.sliced {
   transform: scale(0.8) rotate(180deg);
   opacity: 0;
   transition: all 0.3s ease-out;
-}
-
-.orange.sliced::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, transparent 45%, #FF6B6B 45%, #FF6B6B 55%, transparent 55%);
-  transform: rotate(45deg);
 }
 
 .score {

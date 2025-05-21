@@ -37,6 +37,7 @@ const INITIAL_SPEED = 1;
 
 function App() {
   const { isLoading: isLoadingConfig, error: _configError } = useConfig();
+  const [debugMode, setDebugMode] = useState(false);
   const [count, setCount] = useState(() => Number(localStorage.getItem('count')) || 0);
   const [oranges, setOranges] = useState<Orange[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>(() => {
@@ -58,6 +59,7 @@ function App() {
   const lastMousePosition = useRef({ x: 0, y: 0 });
   const isMouseDown = useRef(false);
   const slicePoints = useRef<{ x: number; y: number }[]>([]);
+  const sliceStartTime = useRef<number>(0);
 
   const sliceOrange = useCallback(async (orangeId: number) => {
     const orange = oranges.find(o => o.id === orangeId);
@@ -125,13 +127,27 @@ function App() {
       if (orange.sliced) return orange;
 
       // Calculate distance from orange to line segment
-      const distance = Math.abs(
-        (dy * orange.x - dx * orange.y + endX * startY - endY * startX) /
-        Math.sqrt(dx * dx + dy * dy)
+      const lineLength = Math.sqrt(dx * dx + dy * dy);
+      if (lineLength === 0) return orange;
+
+      // Calculate projection of orange position onto the line
+      const t = Math.max(0, Math.min(1, (
+        (orange.x - startX) * dx + (orange.y - startY) * dy
+      ) / (lineLength * lineLength)));
+
+      // Calculate closest point on the line segment
+      const closestX = startX + t * dx;
+      const closestY = startY + t * dy;
+
+      // Calculate actual distance from orange to closest point
+      const distance = Math.sqrt(
+        Math.pow(orange.x - closestX, 2) + Math.pow(orange.y - closestY, 2)
       );
 
-      // If orange is close enough to the slice line
-      if (distance < 30) {
+      console.log(distance);
+
+      // If orange is close enough to the slice line (reduced threshold)
+      if (distance < 25) {
         sliceOrange(orange.id);
         return { ...orange, sliced: true };
       }
@@ -143,6 +159,7 @@ function App() {
     if (!gameAreaRef.current) return;
     const rect = gameAreaRef.current.getBoundingClientRect();
     isMouseDown.current = true;
+    sliceStartTime.current = Date.now();
     const position = {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top
@@ -153,6 +170,14 @@ function App() {
 
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (!isMouseDown.current || !gameAreaRef.current) return;
+    
+    // Check if slice duration exceeds 200ms
+    if (Date.now() - sliceStartTime.current > 200) {
+      isMouseDown.current = false;
+      createSliceEffect(slicePoints.current);
+      slicePoints.current = [];
+      return;
+    }
     
     const rect = gameAreaRef.current.getBoundingClientRect();
     const currentX = event.clientX - rect.left;
@@ -175,7 +200,7 @@ function App() {
       );
       lastMousePosition.current = { x: currentX, y: currentY };
     }
-  }, [checkSlice]);
+  }, [checkSlice, createSliceEffect]);
 
   const handleMouseUp = useCallback(() => {
     if (isMouseDown.current) {
@@ -186,7 +211,11 @@ function App() {
   }, [createSliceEffect]);
 
   const spawnOrange = useCallback(() => {
-    if (!gameAreaRef.current) return;
+    console.log('hidden', document.hidden)
+    if (!gameAreaRef.current || document.hidden) return;
+    
+    // In debug mode, only spawn if there are no oranges
+    if (debugMode && oranges.length > 0) return;
     
     const gameArea = gameAreaRef.current;
     const x = Math.random() * (gameArea.clientWidth - 50);
@@ -200,7 +229,7 @@ function App() {
     };
     
     setOranges(prev => [...prev, orange]);
-  }, []);
+  }, [debugMode, oranges.length]);
 
   // Save state to localStorage
   useEffect(() => {
@@ -211,8 +240,33 @@ function App() {
 
   // Spawn oranges
   useEffect(() => {
-    const interval = setInterval(spawnOrange, SPAWN_INTERVAL);
-    return () => clearInterval(interval);
+    let interval: NodeJS.Timeout;
+
+    const handleVisibilityChange = () => {
+      console.log('handleVisibilityChange', document.hidden);
+      if (document.hidden) {
+        if (interval) {
+          clearInterval(interval);
+        }
+      } else {
+        interval = setInterval(spawnOrange, SPAWN_INTERVAL);
+      }
+    };
+
+    // Initial setup
+    if (!document.hidden) {
+      interval = setInterval(spawnOrange, SPAWN_INTERVAL);
+    }
+
+    // Add event listener
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [spawnOrange]);
 
   // Update orange positions
@@ -310,7 +364,14 @@ function App() {
             style={{
               left: `${orange.x}px`,
               top: `${orange.y}px`,
-              transform: `rotate(${orange.rotation}deg)`,
+              transform: `translate(-50%, -50%) rotate(${orange.rotation}deg)`,
+              backgroundImage: 'url(/orange.svg)',
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              width: '50px',
+              height: '50px',
+              position: 'absolute',
+              pointerEvents: 'none'
             }}
           />
         ))}
