@@ -91,6 +91,17 @@ interface JuiceParticle {
   time: number;
 }
 
+interface ExplosionParticle {
+  id: number;
+  x: number;
+  y: number;
+  velocityX: number;
+  velocityY: number;
+  size: number;
+  color: string;
+  time: number;
+}
+
 const ACHIEVEMENTS: Achievement[] = [
   { id: 'noob', title: '🎮 Noob Clicker', description: 'Slice 10 oranges', threshold: 10, unlocked: false },
   { id: 'degen', title: '🚀 True Degen', description: 'Slice 100 oranges', threshold: 100, unlocked: false },
@@ -118,6 +129,8 @@ function App() {
   const sliceStartTime = useRef<number>(0);
   const [juiceParticles, setJuiceParticles] = useState<JuiceParticle[]>([]);
   const nextJuiceId = useRef(0);
+  const [explosionParticles, setExplosionParticles] = useState<ExplosionParticle[]>([]);
+  const nextExplosionId = useRef(0);
   const [achievements, setAchievements] = useState<Achievement[]>(() => {
     const saved = localStorage.getItem('achievements');
     return saved ? JSON.parse(saved) : ACHIEVEMENTS;
@@ -165,14 +178,44 @@ function App() {
     }, 1500);
   }, []);
 
+  const createExplosionEffect = useCallback((x: number, y: number) => {
+    const particles: ExplosionParticle[] = [];
+    const particleCount = 20;
+    const colors = ['#ff4444', '#ff8800', '#ffcc00', '#ff0000'];
+    
+    for (let i = 0; i < particleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 4;
+      const size = 3 + Math.random() * 5;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
+      particles.push({
+        id: nextExplosionId.current++,
+        x,
+        y,
+        velocityX: Math.cos(angle) * speed,
+        velocityY: Math.sin(angle) * speed,
+        size,
+        color,
+        time: 0
+      });
+    }
+    
+    setExplosionParticles(prev => [...prev, ...particles]);
+    
+    setTimeout(() => {
+      setExplosionParticles(prev => prev.filter(p => !particles.some(newP => newP.id === p.id)));
+    }, 1000);
+  }, []);
+
   const sliceBomb = useCallback(async (bombId: number) => {
     try {
       await window.bombMutex.acquire();
       const bomb = bombs.find(b => b.id === bombId);
       if (!bomb || bomb.sliced || window.slicedBombs.has(bombId)) return;
       
-      // Create explosion effect
-      createJuiceEffect(bomb.x, bomb.y);
+      // Create explosion effect instead of juice effect
+      createExplosionEffect(bomb.x, bomb.y);
 
       // Apply cumulative penalty
       const newPenalty = bombPenalty + 10;
@@ -187,7 +230,7 @@ function App() {
     } finally {
       window.bombMutex.release();
     }
-  }, [bombs, bombPenalty]);
+  }, [bombs, bombPenalty, createExplosionEffect]);
 
   const sliceOrange = useCallback(async (orangeId: number) => {
     try {
@@ -522,6 +565,29 @@ function App() {
     return () => cancelAnimationFrame(animationFrame);
   }, []);
 
+  // Update explosion particles
+  useEffect(() => {
+    const animationFrame = requestAnimationFrame(function animate() {
+      setExplosionParticles(prev => 
+        prev.map(particle => {
+          const time = particle.time + 0.016;
+          const currentVelocityY = particle.velocityY + GRAVITY * 2;
+          
+          return {
+            ...particle,
+            x: particle.x + particle.velocityX,
+            y: particle.y + currentVelocityY,
+            velocityY: currentVelocityY,
+            time
+          };
+        })
+      );
+      requestAnimationFrame(animate);
+    });
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
+
   if (isLoadingConfig) {
     return <div>Loading configuration...</div>;
   }
@@ -679,6 +745,24 @@ function App() {
               top: `${particle.y}px`,
               opacity: Math.max(0, 1 - particle.time / 1.5)
             } as React.CSSProperties}
+          />
+        ))}
+        {explosionParticles.map(particle => (
+          <div
+            key={particle.id}
+            style={{
+              position: 'absolute',
+              left: `${particle.x}px`,
+              top: `${particle.y}px`,
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              backgroundColor: particle.color,
+              borderRadius: '50%',
+              transform: 'translate(-50%, -50%)',
+              opacity: Math.max(0, 1 - particle.time / 1),
+              boxShadow: `0 0 ${particle.size * 2}px ${particle.color}`,
+              transition: 'opacity 0.1s ease-out'
+            }}
           />
         ))}
       </div>
