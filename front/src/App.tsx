@@ -322,7 +322,7 @@ function App() {
             }
             window.history.replaceState({}, '', url);
           }}
-          placeholder="Entrez votre adresse de portefeuille"
+          placeholder="Enter wallet address"
           className="wallet-address"
           style={{
             hyphens: 'auto',
