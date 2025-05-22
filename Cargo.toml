@@ -4,11 +4,11 @@ members = ["contracts", "contracts/contract1", "server"]
 exclude = ["init"]
 
 [workspace.dependencies]
-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "feat/indexer_contract_earliest_unsetted", package = "hyle-contract-sdk" }
-client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "feat/indexer_contract_earliest_unsetted", default-features = false, package = "hyle-client-sdk" }
-hyle-modules = { git = "https://github.com/Hyle-org/hyle.git", branch = "feat/indexer_contract_earliest_unsetted", package = "hyle-modules" }
-hyle-smt-token = { git = "https://github.com/Hyle-org/hyle.git", branch = "feat/indexer_contract_earliest_unsetted", default-features = false, package = "hyle-smt-token" }
-hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "feat/indexer_contract_earliest_unsetted", package = "hyle-hydentity" }
+sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", package = "hyle-contract-sdk" }
+client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", default-features = false, package = "hyle-client-sdk" }
+hyle-modules = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", package = "hyle-modules" }
+hyle-smt-token = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", default-features = false, package = "hyle-smt-token" }
+hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", package = "hyle-hydentity" }
 
 contracts = { path = "contracts", default-features = false, package = "contracts" }
 contract1 = { path = "contracts/contract1", package = "contract1" }

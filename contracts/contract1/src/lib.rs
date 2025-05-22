@@ -70,7 +70,7 @@ impl sdk::ZkContract for Faucet {
               // }
         };
 
-        Ok((res, ctx, vec![]))
+        Ok((res.into_bytes(), ctx, vec![]))
     }
 
     /// In this example, we serialize the full state on-chain.

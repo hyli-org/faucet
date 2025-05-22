@@ -3,15 +3,15 @@ name = "init"
 edition = "2021"
 
 [dependencies]
-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", package = "hyle-contract-sdk" }
-client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", default-features = false, package = "hyle-client-sdk" }
-hyle-smt-token = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", features = [
+sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", package = "hyle-contract-sdk" }
+client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", default-features = false, package = "hyle-client-sdk" }
+hyle-smt-token = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", features = [
   "client",
 ], default-features = false, package = "hyle-smt-token" }
-hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", features = [
+hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", features = [
   "client",
 ], package = "hyle-hydentity" }
-hyle-net = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", features = [
+hyle-net = { git = "https://github.com/Hyle-org/hyle.git", branch = "fix/smt_self_transfer", features = [
 ], package = "hyle-net" }
 
 tokio = { version = "1", features = ["full"] }
