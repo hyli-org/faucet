@@ -3,7 +3,7 @@ use anyhow::{self, Context};
 use client_sdk::transaction_builder::{ProvableBlobTx, TxExecutorHandler};
 use client_sdk::{
     contract_states,
-    rest_client::{IndexerApiHttpClient, NodeApiHttpClient},
+    rest_client::{IndexerApiHttpClient, NodeApiClient, NodeApiHttpClient},
     transaction_builder::TxExecutorBuilder,
 };
 use hyle_hydentity::Hydentity;
@@ -86,12 +86,12 @@ async fn fund_faucet(
 
     let tx = executor.process(transaction)?;
 
-    node.send_tx_blob(&blob_tx)
+    node.send_tx_blob(blob_tx)
         .await
         .context("sending tx blob")?;
     for proof in tx.iter_prove() {
         info!("⏳ Waiting for tx proof");
-        node.send_tx_proof(&proof.await?)
+        node.send_tx_proof(proof.await?)
             .await
             .context("sending tx proof")?;
     }

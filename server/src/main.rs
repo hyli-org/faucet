@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use app::{AppModule, AppModuleCtx};
 use axum::Router;
-use client_sdk::rest_client::{IndexerApiHttpClient, NodeApiHttpClient};
+use client_sdk::rest_client::{IndexerApiHttpClient, NodeApiClient, NodeApiHttpClient};
 use config::File;
 use contract1::Faucet;
 use contracts::CONTRACT_ELF;
@@ -104,12 +104,14 @@ async fn main() -> Result<()> {
         node_client,
         faucet_cn: contract_name.clone(),
     });
+
     let start_height = indexer_client
         .get_indexer_contract(&contract_name)
         .await
         .context("getting contract")?
         .earliest_unsettled
         .unwrap_or(app_ctx.node_client.get_block_height().await?);
+
     let prover_ctx = Arc::new(AutoProverCtx {
         start_height,
         prover: Arc::new(prover),

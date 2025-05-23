@@ -1,6 +1,6 @@
 use anyhow::{self};
 use anyhow::{bail, Result};
-use client_sdk::rest_client::NodeApiHttpClient;
+use client_sdk::rest_client::{NodeApiClient, NodeApiHttpClient};
 use sdk::{api::APIRegisterContract, info, ContractName, ProgramId, StateCommitment};
 use std::{sync::Arc, time::Duration};
 use tokio::time::timeout;
@@ -19,7 +19,7 @@ pub async fn init_node(node: Arc<NodeApiHttpClient>, contracts: Vec<ContractInit
 }
 
 async fn init_contract(node: &NodeApiHttpClient, contract: ContractInit) -> Result<()> {
-    match node.get_contract(&contract.name).await {
+    match node.get_contract(contract.name.clone()).await {
         Ok(existing) => {
             let onchain_program_id = hex::encode(existing.program_id.0.as_slice());
             let program_id = hex::encode(contract.program_id);
@@ -35,7 +35,7 @@ async fn init_contract(node: &NodeApiHttpClient, contract: ContractInit) -> Resu
         }
         Err(_) => {
             info!("🚀 Registering {} contract", contract.name);
-            node.register_contract(&APIRegisterContract {
+            node.register_contract(APIRegisterContract {
                 verifier: sdk::verifiers::SP1_4.into(),
                 program_id: ProgramId(contract.program_id.to_vec()),
                 state_commitment: contract.initial_state,
@@ -55,7 +55,7 @@ async fn wait_contract_state(
 ) -> anyhow::Result<()> {
     timeout(Duration::from_secs(30), async {
         loop {
-            let resp = node.get_contract(contract).await;
+            let resp = node.get_contract(contract.clone()).await;
             if resp.is_err() {
                 info!("⏰ Waiting for contract {contract} state to be ready");
                 tokio::time::sleep(Duration::from_millis(500)).await;
