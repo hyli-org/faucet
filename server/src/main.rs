@@ -38,6 +38,8 @@ pub struct Conf {
     pub rest_server_max_body_size: usize,
     pub da_read_from: String,
     pub contract_name: String,
+    pub buffer_blocks: u32,
+    pub buffer_max_txs: usize,
 }
 
 #[tokio::main]
@@ -107,6 +109,8 @@ async fn main() -> Result<()> {
         node: app_ctx.node_client.clone(),
         data_directory: config.data_directory.clone(),
         default_state: Default::default(),
+        buffer_blocks: config.buffer_blocks,
+        buffer_max_txs: config.buffer_max_txs,
     });
 
     handler.build_module::<AppModule>(app_ctx.clone()).await?;
