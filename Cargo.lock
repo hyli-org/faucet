@@ -663,9 +663,9 @@ dependencies = [
 
 [[package]]
 name = "assertables"
-version = "9.5.2"
+version = "9.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "218459a1ca1459c9fbfedc0dc14febf22d0b809708d496b2368e407da91ff5a8"
+checksum = "46109705783fa5733709a155971ad89cdd188d45b7e20fba7906f0d6b4f864e3"
 
 [[package]]
 name = "async-stream"
@@ -1110,9 +1110,9 @@ dependencies = [
 
 [[package]]
 name = "camino"
-version = "1.1.9"
+version = "1.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b96ec4966b5813e2c0507c1f86115c8c5abaadc3980879c3424042a02fd1ad3"
+checksum = "0da45bc31171d8d6960122e222a67740df867c1dd53b4d51caa297084c185cab"
 dependencies = [
  "serde",
 ]
@@ -2408,7 +2408,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 [[package]]
 name = "hyle-client-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#6d67192e85c13b53402eccad513f085bfd288029"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -2428,7 +2428,7 @@ dependencies = [
 [[package]]
 name = "hyle-contract-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#6d67192e85c13b53402eccad513f085bfd288029"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
 dependencies = [
  "borsh",
  "hyle-model",
@@ -2441,7 +2441,7 @@ dependencies = [
 [[package]]
 name = "hyle-crypto"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#6d67192e85c13b53402eccad513f085bfd288029"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
 dependencies = [
  "anyhow",
  "blst",
@@ -2454,7 +2454,7 @@ dependencies = [
 [[package]]
 name = "hyle-model"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#6d67192e85c13b53402eccad513f085bfd288029"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -2477,7 +2477,7 @@ dependencies = [
 [[package]]
 name = "hyle-modules"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#6d67192e85c13b53402eccad513f085bfd288029"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
 dependencies = [
  "anyhow",
  "anymap",
@@ -2511,7 +2511,7 @@ dependencies = [
 [[package]]
 name = "hyle-net"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#6d67192e85c13b53402eccad513f085bfd288029"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -2537,7 +2537,7 @@ dependencies = [
 [[package]]
 name = "hyle-verifiers"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#6d67192e85c13b53402eccad513f085bfd288029"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
 dependencies = [
  "anyhow",
  "borsh",
@@ -6092,9 +6092,9 @@ dependencies = [
 
 [[package]]
 name = "tower-http"
-version = "0.6.5"
+version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cc2d9e086a412a451384326f521c8123a99a466b329941a9403696bff9b0da2"
+checksum = "adc82fd73de2a9722ac5da747f12383d2bfdb93591ee6c58486e0097890f05f2"
 dependencies = [
  "bitflags",
  "bytes",
