@@ -1530,13 +1530,14 @@ dependencies = [
 
 [[package]]
 name = "aws-smithy-http-client"
-version = "1.0.2"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e44697a9bded898dcd0b1cb997430d949b87f4f8940d91023ae9062bf218250"
+checksum = "073d330f94bdf1f47bb3e0f5d45dda1e372a54a553c39ab6e9646902c8c81594"
 dependencies = [
  "aws-smithy-async",
  "aws-smithy-runtime-api",
  "aws-smithy-types",
+ "h2 0.3.26",
  "h2 0.4.10",
  "http 0.2.12",
  "http 1.3.1",
@@ -3464,7 +3465,7 @@ dependencies = [
 [[package]]
 name = "hyle-bonsai-runner"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#33a2b19af6eb3e157bceffef76c68c8bc2de69d0"
 dependencies = [
  "anyhow",
  "bincode",
@@ -3482,7 +3483,7 @@ dependencies = [
 [[package]]
 name = "hyle-client-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#33a2b19af6eb3e157bceffef76c68c8bc2de69d0"
 dependencies = [
  "anyhow",
  "axum",
@@ -3502,7 +3503,7 @@ dependencies = [
 [[package]]
 name = "hyle-contract-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#33a2b19af6eb3e157bceffef76c68c8bc2de69d0"
 dependencies = [
  "borsh",
  "hyle-model",
@@ -3515,7 +3516,7 @@ dependencies = [
 [[package]]
 name = "hyle-crypto"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#33a2b19af6eb3e157bceffef76c68c8bc2de69d0"
 dependencies = [
  "anyhow",
  "blst",
@@ -3528,7 +3529,7 @@ dependencies = [
 [[package]]
 name = "hyle-hydentity"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#33a2b19af6eb3e157bceffef76c68c8bc2de69d0"
 dependencies = [
  "anyhow",
  "borsh",
@@ -3543,7 +3544,7 @@ dependencies = [
 [[package]]
 name = "hyle-model"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#33a2b19af6eb3e157bceffef76c68c8bc2de69d0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -3566,7 +3567,7 @@ dependencies = [
 [[package]]
 name = "hyle-net"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#33a2b19af6eb3e157bceffef76c68c8bc2de69d0"
 dependencies = [
  "anyhow",
  "axum",
@@ -3592,7 +3593,7 @@ dependencies = [
 [[package]]
 name = "hyle-smt-token"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#d7762baf604c12a8f713e50b1ddb4a6b8c62ce3c"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#33a2b19af6eb3e157bceffef76c68c8bc2de69d0"
 dependencies = [
  "anyhow",
  "borsh",

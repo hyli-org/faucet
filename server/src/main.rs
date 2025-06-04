@@ -39,7 +39,7 @@ pub struct Conf {
     pub da_read_from: String,
     pub contract_name: String,
     pub buffer_blocks: u32,
-    pub buffer_max_txs: usize,
+    pub max_txs_per_proof: usize,
 }
 
 #[tokio::main]
@@ -110,7 +110,7 @@ async fn main() -> Result<()> {
         data_directory: config.data_directory.clone(),
         default_state: Default::default(),
         buffer_blocks: config.buffer_blocks,
-        buffer_max_txs: config.buffer_max_txs,
+        max_txs_per_proof: config.max_txs_per_proof,
     });
 
     handler.build_module::<AppModule>(app_ctx.clone()).await?;
