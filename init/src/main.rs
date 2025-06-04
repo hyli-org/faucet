@@ -10,7 +10,6 @@ use hyle_hydentity::Hydentity;
 use hyle_smt_token::account::{Account, AccountSMT};
 use sdk::{info, ContractName};
 use sdk::{Blob, BlobTransaction, Calldata, HyleOutput};
-use serde::Deserialize;
 use std::collections::HashMap;
 use std::env;
 use std::sync::Arc;
@@ -57,10 +56,6 @@ contract_states!(
         pub hydentity: Hydentity,
     }
 );
-#[derive(Deserialize)]
-struct BalanceResponse {
-    balance: u128,
-}
 
 async fn fund_address(
     address: &str,
@@ -68,16 +63,6 @@ async fn fund_address(
     node: Arc<NodeApiHttpClient>,
     indexer: Arc<IndexerApiHttpClient>,
 ) -> Result<()> {
-    let response = indexer
-        .get::<BalanceResponse>(format!("v1/indexer/contract/oranj/balance/{}", address).as_str())
-        .await;
-    if let Ok(balance) = response {
-        if balance.balance > 0 {
-            info!("✅ {address} already funded with {} ORANJ", balance.balance);
-            return Ok(());
-        }
-    }
-
     info!("Funding {address}");
     let api: HashMap<String, Account> = indexer.fetch_current_state(&"oranj".into()).await?;
     let mut oranj = AccountSMT::default();
