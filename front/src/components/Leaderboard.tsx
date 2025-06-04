@@ -33,7 +33,7 @@ export function Leaderboard() {
 
         // Filter out faucet addresses, sort by balance in descending order and take top 15
         const sortedEntries = Object.values(response)
-          .filter(entry => entry.address != 'faucet' && entry.address != 'blackjack')
+          .filter(entry => entry.address != 'faucet' && entry.address != "faucet@hydentity" && entry.address != 'blackjack')
           .map(({ address, balance }) => ({
             address,
             balance: Number(balance)
