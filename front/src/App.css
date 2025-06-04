@@ -6,6 +6,10 @@
   z-index: 10;
 }
 
+.wallet-input button {
+  cursor: pointer;
+}
+
 .wallet-address {
   width: 80%;
   max-width: 500px;
@@ -171,7 +175,7 @@
   background: rgba(0, 0, 0, 0.3);
   border-radius: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  border: 2px solid #FFD700;
+  border: 2px solid #ffd700;
 }
 
 .leaderboard {
@@ -181,7 +185,7 @@
   border-radius: 15px;
   padding: 20px;
   color: #fff;
-  border: 2px solid #FFD700;
+  border: 2px solid #ffd700;
 }
 
 .achievement-list {
@@ -319,13 +323,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(to bottom, #C1440E, #8B0000);
+  background: linear-gradient(to bottom, #c1440e, #8b0000);
   position: relative;
   overflow: hidden;
 }
 
 .App::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -403,17 +407,18 @@ body {
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(var(--fly-distance));
+    transform: translate(-50%, -50%) rotate(var(--rotation))
+      translateY(var(--fly-distance));
   }
 }
 
 .score {
   font-size: 2.5em;
   font-weight: bold;
-  color: #FFD700;
+  color: #ffd700;
   margin: 20px 0;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-  font-family: 'Arial', sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-family: "Arial", sans-serif;
 }
 
 .wallet-input {
@@ -426,11 +431,11 @@ body {
 .wallet-address {
   width: 100%;
   padding: 15px;
-  border: 2px solid #FFD700;
+  border: 2px solid #ffd700;
   border-radius: 10px;
   font-size: 1.2em;
   background: rgba(0, 0, 0, 0.3);
-  color: #FFD700;
+  color: #ffd700;
   text-align: center;
 }
 
@@ -451,12 +456,12 @@ body {
   background: rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 215, 0, 0.3);
-  color: #FFD700;
+  color: #ffd700;
 }
 
 .achievement.unlocked {
   background: rgba(255, 215, 0, 0.2);
-  border-color: #FFD700;
+  border-color: #ffd700;
 }
 
 .achievement-popup {
@@ -470,30 +475,49 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   animation: popup 3s ease-in-out;
   z-index: 1000;
-  border: 2px solid #FFD700;
-  color: #FFD700;
+  border: 2px solid #ffd700;
+  color: #ffd700;
 }
 
 @keyframes popup {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-  20% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-  80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
 }
 
 /* Ajout d'étoiles en arrière-plan */
 .App::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
-                    radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
-                    radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
-  background-size: 550px 550px, 350px 350px, 250px 250px;
-  background-position: 0 0, 40px 60px, 130px 270px;
+  background-image:
+    radial-gradient(white, rgba(255, 255, 255, 0.2) 2px, transparent 40px),
+    radial-gradient(white, rgba(255, 255, 255, 0.15) 1px, transparent 30px),
+    radial-gradient(white, rgba(255, 255, 255, 0.1) 2px, transparent 40px);
+  background-size:
+    550px 550px,
+    350px 350px,
+    250px 250px;
+  background-position:
+    0 0,
+    40px 60px,
+    130px 270px;
   opacity: 0.3;
   pointer-events: none;
 }
@@ -632,7 +656,7 @@ pre {
   pointer-events: none;
   width: 8px;
   height: 8px;
-  background: #FF8C00;
+  background: #ff8c00;
   border-radius: 50%;
   opacity: 0.8;
   filter: blur(1px);
@@ -649,10 +673,11 @@ pre {
     opacity: 0.6;
   }
   100% {
-    transform: scale(1) translate(
-      calc(var(--x) + var(--gravity-x)),
-      calc(var(--y) + var(--gravity-y))
-    );
+    transform: scale(1)
+      translate(
+        calc(var(--x) + var(--gravity-x)),
+        calc(var(--y) + var(--gravity-y))
+      );
     opacity: 0;
   }
 }
@@ -735,7 +760,7 @@ pre {
 
 .leaderboard-entry .balance {
   font-weight: bold;
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .leaderboard .loading,

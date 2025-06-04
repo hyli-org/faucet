@@ -16,6 +16,8 @@
     "crypto-js": "^4.2.0",
     "elliptic": "^6.6.1",
     "hyli": "^0.3.0",
+    "hyli-check-secret": "^0.3.5",
+    "hyli-wallet": "^0.2.16",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.5.0"

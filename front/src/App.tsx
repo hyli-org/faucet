@@ -6,6 +6,7 @@ import { BlobTransaction } from 'hyli';
 import { useConfig } from './hooks/useConfig';
 import { transfer } from './types/smt_token';
 import { Leaderboard } from './components/Leaderboard';
+import { HyliWallet, useWallet } from 'hyli-wallet';
 
 // Mutex implementation
 class Mutex {
@@ -137,30 +138,22 @@ function App() {
     return saved ? JSON.parse(saved) : ACHIEVEMENTS;
   });
   const [lastAchievement, setLastAchievement] = useState<Achievement | null>(null);
-  const [walletAddress, setWalletAddress] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    const walletFromUrl = params.get('wallet');
-    if (walletFromUrl) {
-      localStorage.setItem('walletAddress', walletFromUrl);
-      return walletFromUrl;
-    }
-    return localStorage.getItem('walletAddress') || '';
-  });
+  const { wallet, logout } = useWallet();
 
   const createJuiceEffect = useCallback((x: number, y: number) => {
     const particles: JuiceParticle[] = [];
     const particleCount = 12; // Nombre de particules de jus
     const initialSpeed = 3; // Vitesse initiale
-    
+
     for (let i = 0; i < particleCount; i++) {
       const angle = (i * 360 / particleCount) + Math.random() * 30 - 15; // Angle avec un peu de variation
       const speed = initialSpeed + Math.random() * 5; // Plus de variation dans la vitesse
       const radian = angle * Math.PI / 180;
-      
+
       // Calcul des composantes de la vitesse initiale
       const velocityX = Math.cos(radian) * speed;
       const velocityY = Math.sin(radian) * speed;
-      
+
       particles.push({
         id: nextJuiceId.current++,
         x,
@@ -170,9 +163,9 @@ function App() {
         time: 0
       });
     }
-    
+
     setJuiceParticles(prev => [...prev, ...particles]);
-    
+
     // Nettoyer les particules après l'animation
     setTimeout(() => {
       setJuiceParticles(prev => prev.filter(p => !particles.some(newP => newP.id === p.id)));
@@ -183,13 +176,13 @@ function App() {
     const particles: ExplosionParticle[] = [];
     const particleCount = 20;
     const colors = ['#ff4444', '#ff8800', '#ffcc00', '#ff0000'];
-    
+
     for (let i = 0; i < particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = 2 + Math.random() * 4;
       const size = 3 + Math.random() * 5;
       const color = colors[Math.floor(Math.random() * colors.length)];
-      
+
       particles.push({
         id: nextExplosionId.current++,
         x,
@@ -201,20 +194,21 @@ function App() {
         time: 0
       });
     }
-    
+
     setExplosionParticles(prev => [...prev, ...particles]);
-    
+
     setTimeout(() => {
       setExplosionParticles(prev => prev.filter(p => !particles.some(newP => newP.id === p.id)));
     }, 1000);
   }, []);
 
   const sliceBomb = useCallback(async (bombId: number) => {
+    if (!wallet || !wallet.address) return;
     try {
       await window.bombMutex.acquire();
       const bomb = bombs.find(b => b.id === bombId);
       if (!bomb || bomb.sliced || window.slicedBombs.has(bombId)) return;
-      
+
       // Create explosion effect instead of juice effect
       createExplosionEffect(bomb.x, bomb.y);
 
@@ -222,8 +216,8 @@ function App() {
       const newPenalty = bombPenalty + 10;
       setBombPenalty(newPenalty);
       localStorage.setItem('bombPenalty', newPenalty.toString());
-      
-      setBombs(prev => prev.map(b => 
+
+      setBombs(prev => prev.map(b =>
         b.id === bombId ? { ...b, sliced: true } : b
       ));
 
@@ -234,6 +228,7 @@ function App() {
   }, [bombs, bombPenalty, createExplosionEffect]);
 
   const sliceOrange = useCallback(async (orangeId: number) => {
+    if (!wallet || !wallet.address) return;
     try {
       await window.orangeMutex.acquire();
       const orange = oranges.find(o => o.id === orangeId);
@@ -245,10 +240,10 @@ function App() {
       // Only send blob tx if no bomb penalty is active
       if (bombPenalty === 0) {
         // Send blob tx 
-        const blobTransfer = transfer("faucet", walletAddress, "oranj", BigInt(1), 1);
+        const blobTransfer = transfer("faucet", wallet.address, "oranj", BigInt(1), 1);
         const blobClick = blob_click(0);
 
-        const identity = `${walletAddress}@${blobClick.contract_name}`;
+        const identity = `${wallet.address}@${blobClick.contract_name}`;
         const blobTx: BlobTransaction = {
           identity,
           blobs: [blobTransfer, blobClick],
@@ -263,7 +258,7 @@ function App() {
         localStorage.setItem('bombPenalty', newPenalty.toString());
       }
 
-      setOranges(prev => prev.map(o => 
+      setOranges(prev => prev.map(o =>
         o.id === orangeId ? { ...o, sliced: true } : o
       ));
 
@@ -271,14 +266,14 @@ function App() {
     } finally {
       window.orangeMutex.release();
     }
-  }, [oranges, bombPenalty, walletAddress]);
+  }, [oranges, bombPenalty, wallet?.address]);
 
   const createSliceEffect = useCallback((points: { x: number; y: number }[]) => {
     if (!gameAreaRef.current || points.length < 2) return;
-    
+
     const slice = document.createElement('div');
     slice.className = 'slice-effect';
-    
+
     // Créer un SVG pour la ligne
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '100%');
@@ -286,7 +281,7 @@ function App() {
     svg.style.position = 'absolute';
     svg.style.top = '0';
     svg.style.left = '0';
-    
+
     // Créer le chemin
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     const d = points.reduce((acc, point, i) => {
@@ -297,18 +292,18 @@ function App() {
     path.setAttribute('stroke-width', '2');
     path.setAttribute('fill', 'none');
     path.style.filter = 'drop-shadow(0 0 2px rgba(255,255,255,0.8))';
-    
+
     svg.appendChild(path);
     slice.appendChild(svg);
     gameAreaRef.current.appendChild(slice);
-    
+
     setTimeout(() => slice.remove(), 300);
   }, []);
 
   const checkSlice = useCallback((startX: number, startY: number, endX: number, endY: number) => {
     const dx = endX - startX;
     const dy = endY - startY;
-    
+
     // Create slice effect
     createSliceEffect([{ x: startX, y: startY }, { x: endX, y: endY }]);
 
@@ -398,7 +393,7 @@ function App() {
 
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (!isMouseDown.current || !gameAreaRef.current) return;
-    
+
     // Check if slice duration exceeds 200ms
     if (Date.now() - sliceStartTime.current > 200) {
       isMouseDown.current = false;
@@ -406,7 +401,7 @@ function App() {
       slicePoints.current = [];
       return;
     }
-    
+
     const rect = gameAreaRef.current.getBoundingClientRect();
     const currentX = event.clientX - rect.left;
     const currentY = event.clientY - rect.top;
@@ -433,7 +428,7 @@ function App() {
   const handleTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     if (!isMouseDown.current || !gameAreaRef.current) return;
     event.preventDefault(); // Prevent scrolling while slicing
-    
+
     // Check if slice duration exceeds 200ms
     if (Date.now() - sliceStartTime.current > 200) {
       isMouseDown.current = false;
@@ -441,7 +436,7 @@ function App() {
       slicePoints.current = [];
       return;
     }
-    
+
     const rect = gameAreaRef.current.getBoundingClientRect();
     const touch = event.touches[0];
     const currentX = touch.clientX - rect.left;
@@ -482,19 +477,16 @@ function App() {
     isMouseDown.current = false;
   }, [createSliceEffect]);
 
-  const spawnOrange = useCallback(() => {
-    console.log('spawnOrange', walletAddress);
+  const spawnOrange = () => {
+    console.log('spawnOrange', wallet);
     if (!gameAreaRef.current) return;
-    
-    // Don't spawn if no wallet address is set
-    if (!walletAddress) return;
-    
+
     // In debug mode, only spawn if there are no oranges
     if (debugMode && oranges.length > 0) return;
-    
+
     const gameArea = gameAreaRef.current;
     const x = Math.random() * (gameArea.clientWidth - 50);
-    
+
     // 20% chance to spawn a bomb instead of an orange
     if (Math.random() < 0.2) {
       const bomb: Bomb = {
@@ -517,20 +509,14 @@ function App() {
       };
       setOranges(prev => [...prev, orange]);
     }
-  }, [debugMode, oranges.length, walletAddress]);
+  };
 
   // Save state to localStorage
   useEffect(() => {
     localStorage.setItem('count', count.toString());
     localStorage.setItem('achievements', JSON.stringify(achievements));
-    localStorage.setItem('walletAddress', walletAddress);
     localStorage.setItem('bombPenalty', bombPenalty.toString());
-  }, [count, achievements, walletAddress, bombPenalty]);
-
-  // Spawn oranges
-  useEffect(() => {
-    // This effect is now handled in the animation frame
-  }, [spawnOrange]);
+  }, [count, achievements, bombPenalty]);
 
   // Update orange and bomb positions
   useEffect(() => {
@@ -544,7 +530,7 @@ function App() {
         lastSpawnTime = currentTime;
       }
 
-      setOranges(prev => 
+      setOranges(prev =>
         prev
           .map(orange => ({
             ...orange,
@@ -555,7 +541,7 @@ function App() {
           .filter(orange => orange.y < window.innerHeight + 100)
       );
 
-      setBombs(prev => 
+      setBombs(prev =>
         prev
           .map(bomb => ({
             ...bomb,
@@ -590,26 +576,30 @@ function App() {
   }, [count, achievements]);
 
   useEffect(() => {
-    nodeService.getBalance(walletAddress).then((balance) => {
+    if (!wallet?.address) {
+      setCount(0);
+      return;
+    }
+    nodeService.getBalance(wallet.address).then((balance) => {
       setCount(balance);
     }).catch((_) => {
       setCount(0);
     });
-  }, [walletAddress]);
+  }, [wallet?.address]);
 
   // Mettre à jour la position des particules avec la balistique
   useEffect(() => {
     const animationFrame = requestAnimationFrame(function animate() {
-      setJuiceParticles(prev => 
+      setJuiceParticles(prev =>
         prev.map(particle => {
           const time = particle.time + 0.016; // ~60fps
           // Mise à jour de la vitesse verticale avec la gravité (augmentée)
           const currentVelocityY = particle.velocityY + GRAVITY * 3;
-          
+
           // Mise à jour de la position
           const newX = particle.x + particle.velocityX;
           const newY = particle.y + currentVelocityY;
-          
+
           return {
             ...particle,
             x: newX,
@@ -628,11 +618,11 @@ function App() {
   // Update explosion particles
   useEffect(() => {
     const animationFrame = requestAnimationFrame(function animate() {
-      setExplosionParticles(prev => 
+      setExplosionParticles(prev =>
         prev.map(particle => {
           const time = particle.time + 0.016;
           const currentVelocityY = particle.velocityY + GRAVITY * 2;
-          
+
           return {
             ...particle,
             x: particle.x + particle.velocityX,
@@ -652,35 +642,36 @@ function App() {
     return <div>Loading configuration...</div>;
   }
 
+  const renderCustomWalletButton = ({ onClick }: { onClick: () => void }) => (
+    <button className="wallet-address" onClick={onClick} style={{ padding: '10px 20px', fontSize: '1rem' }}>
+      {wallet ? "Log Out from Custom" : "Login or Signup"}
+    </button>
+  );
+
   return (
     <div className="App">
       <div className="wallet-input">
-        <input
-          type="text"
-          value={walletAddress}
-          onChange={(e) => {
-            const newAddress = e.target.value;
-            localStorage.setItem('walletAddress', newAddress);
-            setWalletAddress(newAddress);
-
-            const url = new URL(window.location.href);
-            if (newAddress) {
-              url.searchParams.set('wallet', newAddress);
-            } else {
-              url.searchParams.delete('wallet');
-            }
-            window.history.replaceState({}, '', url);
-          }}
-          placeholder="Enter wallet address"
-          className="wallet-address"
-          style={{
-            hyphens: 'auto',
-            overflowWrap: 'break-word',
-            width: '100%',
-            maxWidth: '600px',
-            padding: '8px',
-          }}
-        />
+        {!wallet?.address && (
+          <HyliWallet
+            providers={['password', 'google', 'github', 'x']}
+            button={renderCustomWalletButton}
+          />
+        ) || (
+            <span
+              className="wallet-address"
+              style={{
+                hyphens: 'auto',
+                overflowWrap: 'break-word',
+                width: '100%',
+                maxWidth: '600px',
+                padding: '8px',
+              }}
+            >
+              {wallet?.address}
+              <div onClick={logout} style={{ cursor: 'pointer', textDecoration: 'underline' }} >
+                (Log Out)
+              </div>
+            </span>)}
       </div>
       <div className="score">
         🚀 {count.toLocaleString()} ORANJ
@@ -691,7 +682,7 @@ function App() {
         )}
       </div>
 
-      <div 
+      <div
         ref={gameAreaRef}
         className="game-area"
         onMouseDown={handleMouseDown}
@@ -703,8 +694,8 @@ function App() {
         onTouchEnd={handleTouchEnd}
         style={{ touchAction: 'none' }} // Prevent default touch actions
       >
-        {!walletAddress && (
-          <div 
+        {!wallet?.address && (
+          <div
             style={{
               position: 'absolute',
               top: '50%',
@@ -831,13 +822,15 @@ function App() {
         ))}
       </div>
 
-      {lastAchievement && (
-        <div className="achievement-popup">
-          <h3>🏆 Achievement Unlocked!</h3>
-          <div className="achievement-title">{lastAchievement.title}</div>
-          <div className="achievement-description">{lastAchievement.description}</div>
-        </div>
-      )}
+      {
+        lastAchievement && (
+          <div className="achievement-popup">
+            <h3>🏆 Achievement Unlocked!</h3>
+            <div className="achievement-title">{lastAchievement.title}</div>
+            <div className="achievement-description">{lastAchievement.description}</div>
+          </div>
+        )
+      }
 
       <div className="achievements-container">
         <div className="achievements">
@@ -857,7 +850,7 @@ function App() {
 
         <Leaderboard />
       </div>
-    </div>
+    </div >
   );
 }
 
