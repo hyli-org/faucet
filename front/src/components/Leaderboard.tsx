@@ -30,10 +30,10 @@ export function Leaderboard() {
           'v1/indexer/contract/oranj/state',
           'get leaderboard'
         );
-        
+
         // Filter out faucet addresses, sort by balance in descending order and take top 15
         const sortedEntries = Object.values(response)
-          .filter(entry => !entry.address.toLowerCase().includes('faucet'))
+          .filter(entry => entry.address != 'faucet' && entry.address != 'blackjack')
           .map(({ address, balance }) => ({
             address,
             balance: Number(balance)
@@ -51,7 +51,7 @@ export function Leaderboard() {
 
     fetchLeaderboard();
     const interval = setInterval(fetchLeaderboard, 10000);
-    
+
     // Progress bar animation
     const progressInterval = setInterval(() => {
       setRefreshProgress(prev => {
