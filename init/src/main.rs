@@ -17,6 +17,24 @@ use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Read first arg
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        eprintln!("Usage: {} <address> [amount]", args[0]);
+        std::process::exit(1);
+    }
+    let address = args[1].clone();
+    let amount: u128 = if args.len() > 2 {
+        args[2].parse().unwrap_or_else(|_| {
+            eprintln!("Invalid amount: {}", args[2]);
+            std::process::exit(1);
+        })
+    } else {
+        1_000_000_000 // Default amount
+    };
+
+    tracing_subscriber::fmt().init();
+
     let node_url = env::var("NODE_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
     let indexer_url =
         env::var("INDEXER_URL").unwrap_or_else(|_| "http://localhost:4321".to_string());
@@ -24,7 +42,13 @@ async fn main() -> Result<()> {
     let indexer_client =
         Arc::new(IndexerApiHttpClient::new(indexer_url).context("build indexer client")?);
 
-    fund_faucet(node_client.clone(), indexer_client.clone()).await
+    fund_address(
+        &address,
+        amount,
+        node_client.clone(),
+        indexer_client.clone(),
+    )
+    .await
 }
 
 contract_states!(
@@ -38,21 +62,23 @@ struct BalanceResponse {
     balance: u128,
 }
 
-async fn fund_faucet(
+async fn fund_address(
+    address: &str,
+    amount: u128,
     node: Arc<NodeApiHttpClient>,
     indexer: Arc<IndexerApiHttpClient>,
 ) -> Result<()> {
     let response = indexer
-        .get::<BalanceResponse>("v1/indexer/contract/oranj/balance/faucet")
+        .get::<BalanceResponse>(format!("v1/indexer/contract/oranj/balance/{}", address).as_str())
         .await;
     if let Ok(balance) = response {
         if balance.balance > 0 {
-            info!("✅ Faucet already funded with {} ORANJ", balance.balance);
+            info!("✅ {address} already funded with {} ORANJ", balance.balance);
             return Ok(());
         }
     }
 
-    info!("Funding faucet");
+    info!("Funding {address}");
     let api: HashMap<String, Account> = indexer.fetch_current_state(&"oranj".into()).await?;
     let mut oranj = AccountSMT::default();
     for (id, account) in api.into_iter() {
@@ -78,8 +104,8 @@ async fn fund_faucet(
         &mut transaction,
         "oranj".into(),
         "faucet@hydentity".into(),
-        "faucet".into(),
-        1_000_000_000,
+        address.into(),
+        amount,
     )?;
 
     let blob_tx = BlobTransaction::new(transaction.identity.clone(), transaction.blobs.clone());
