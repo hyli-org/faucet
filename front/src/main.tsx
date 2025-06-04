@@ -7,6 +7,7 @@ import App from './App.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WalletProvider
+      forceSessionKey={false}
       config={{
         nodeBaseUrl: import.meta.env.VITE_NODE_BASE_URL,
         walletServerBaseUrl: import.meta.env.VITE_WALLET_SERVER_BASE_URL,
@@ -15,5 +16,5 @@ createRoot(document.getElementById('root')!).render(
     >
       <App />
     </WalletProvider>
-  </StrictMode>,
+  </StrictMode >,
 )
