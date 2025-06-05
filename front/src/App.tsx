@@ -7,6 +7,9 @@ import { useConfig } from './hooks/useConfig';
 import { transfer } from './types/smt_token';
 import { Leaderboard } from './components/Leaderboard';
 import { HyliWallet, useWallet } from 'hyli-wallet';
+import slice1 from './audio/slice1.mp3';
+import slice2 from './audio/slice2.mp3';
+import slice3 from './audio/slice3.mp3';
 
 // Mutex implementation
 class Mutex {
@@ -233,6 +236,12 @@ function App() {
       await window.orangeMutex.acquire();
       const orange = oranges.find(o => o.id === orangeId);
       if (!orange || orange.sliced || window.slicedOranges.has(orangeId)) return;
+
+      // Play random slice sound
+      const sliceSounds = [slice1, slice2, slice3];
+      const randomSound = sliceSounds[Math.floor(Math.random() * sliceSounds.length)];
+      const audio = new Audio(randomSound);
+      audio.play();
 
       // Créer l'effet de jus
       createJuiceEffect(orange.x, orange.y);
