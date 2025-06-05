@@ -10,6 +10,7 @@ import { HyliWallet, useWallet } from 'hyli-wallet';
 import slice1 from './audio/slice1.mp3';
 import slice2 from './audio/slice2.mp3';
 import slice3 from './audio/slice3.mp3';
+import bombSound from './audio/bomb.mp3';
 
 // Mutex implementation
 class Mutex {
@@ -211,6 +212,10 @@ function App() {
       await window.bombMutex.acquire();
       const bomb = bombs.find(b => b.id === bombId);
       if (!bomb || bomb.sliced || window.slicedBombs.has(bombId)) return;
+
+      // Play bomb sound
+      const bombAudio = new Audio(bombSound);
+      bombAudio.play();
 
       // Create explosion effect instead of juice effect
       createExplosionEffect(bomb.x, bomb.y);
