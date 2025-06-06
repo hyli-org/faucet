@@ -127,6 +127,7 @@ function App() {
   const [oranges, setOranges] = useState<Orange[]>([]);
   const [bombs, setBombs] = useState<Bomb[]>([]);
   const [bombPenalty, setBombPenalty] = useState(() => Number(localStorage.getItem('bombPenalty')) || 0);
+  const [isScoreShaking, setIsScoreShaking] = useState(false);
   const gameAreaRef = useRef<HTMLDivElement>(null);
   const nextOrangeId = useRef(0);
   const lastMousePosition = useRef({ x: 0, y: 0 });
@@ -142,7 +143,12 @@ function App() {
     return saved ? JSON.parse(saved) : ACHIEVEMENTS;
   });
   const [lastAchievement, setLastAchievement] = useState<Achievement | null>(null);
-  const { wallet, logout } = useWallet();
+  // const { wallet, logout } = useWallet();
+  const wallet = { address: "bob@wallet" };
+  const logout = useCallback(() => {
+    // Implement logout logic here
+    console.log("Logged out");
+  }, []);
 
   const createJuiceEffect = useCallback((x: number, y: number) => {
     const particles: JuiceParticle[] = [];
@@ -213,6 +219,11 @@ function App() {
       const bomb = bombs.find(b => b.id === bombId);
       if (!bomb || bomb.sliced || window.slicedBombs.has(bombId)) return;
 
+      // Vibrate for 200ms when slicing a bomb (longer vibration for bombs)
+      if ('vibrate' in navigator) {
+        navigator.vibrate([1000]);
+      }
+
       // Play bomb sound
       const bombAudio = new Audio(bombSound);
       bombAudio.play();
@@ -224,6 +235,10 @@ function App() {
       const newPenalty = bombPenalty + 10;
       setBombPenalty(newPenalty);
       localStorage.setItem('bombPenalty', newPenalty.toString());
+
+      // Trigger score shake animation
+      setIsScoreShaking(true);
+      setTimeout(() => setIsScoreShaking(false), 500);
 
       setBombs(prev => prev.map(b =>
         b.id === bombId ? { ...b, sliced: true } : b
@@ -241,6 +256,11 @@ function App() {
       await window.orangeMutex.acquire();
       const orange = oranges.find(o => o.id === orangeId);
       if (!orange || orange.sliced || window.slicedOranges.has(orangeId)) return;
+
+      // Vibrate for 50ms when slicing an orange
+      if ('vibrate' in navigator) {
+        navigator.vibrate(150);
+      }
 
       // Play random slice sound
       const sliceSounds = [slice1, slice2, slice3];
@@ -687,7 +707,7 @@ function App() {
               </div>
             </span>)}
       </div>
-      <div className="score">
+      <div className={`score ${isScoreShaking ? 'shake' : ''}`}>
         🚀 {count.toLocaleString()} ORANJ
         {bombPenalty > 0 && (
           <span style={{ color: '#ff4444', marginLeft: '10px' }}>
@@ -847,6 +867,7 @@ function App() {
       }
 
       <div className="achievements-container">
+        <Leaderboard />
         <div className="achievements">
           <h3>🏆 Achievements</h3>
           <div className="achievement-list">
@@ -861,8 +882,6 @@ function App() {
             ))}
           </div>
         </div>
-
-        <Leaderboard />
       </div>
     </div >
   );
