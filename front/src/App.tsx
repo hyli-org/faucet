@@ -6,6 +6,7 @@ import { BlobTransaction } from 'hyli';
 import { useConfig } from './hooks/useConfig';
 import { transfer } from './types/smt_token';
 import { Leaderboard } from './components/Leaderboard';
+import { TransactionList } from './components/TransactionList';
 import { HyliWallet, useWallet } from 'hyli-wallet';
 import slice1 from './audio/slice1.mp3';
 import slice2 from './audio/slice2.mp3';
@@ -149,6 +150,7 @@ function App() {
     // Implement logout logic here
     console.log("Logged out");
   }, []);
+  const [transactions, setTransactions] = useState<Array<{ id: string; timestamp: number }>>([]);
 
   const createJuiceEffect = useCallback((x: number, y: number) => {
     const particles: JuiceParticle[] = [];
@@ -282,7 +284,13 @@ function App() {
           identity,
           blobs: [blobTransfer, blobClick],
         }
-        await nodeService.sendBlobTx(blobTx);
+        const txHash = await nodeService.sendBlobTx(blobTx);
+        
+        // Add transaction to the list
+        setTransactions(prev => [{
+          id: txHash,
+          timestamp: Date.now()
+        }, ...prev].slice(0, 10)); // Keep only the last 10 transactions
 
         setCount(c => c + 1);
       } else {
@@ -512,7 +520,6 @@ function App() {
   }, [createSliceEffect]);
 
   const spawnOrange = () => {
-    console.log('spawnOrange', wallet);
     if (!gameAreaRef.current) return;
 
     // In debug mode, only spawn if there are no oranges
@@ -684,6 +691,7 @@ function App() {
 
   return (
     <div className="App">
+      <TransactionList transactions={transactions} setTransactions={setTransactions} />
       <div className="wallet-input">
         {!wallet?.address && (
           <HyliWallet
