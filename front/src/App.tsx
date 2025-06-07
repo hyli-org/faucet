@@ -144,12 +144,7 @@ function App() {
     return saved ? JSON.parse(saved) : ACHIEVEMENTS;
   });
   const [lastAchievement, setLastAchievement] = useState<Achievement | null>(null);
-  // const { wallet, logout } = useWallet();
-  const wallet = { address: "bob@wallet" };
-  const logout = useCallback(() => {
-    // Implement logout logic here
-    console.log("Logged out");
-  }, []);
+  const { wallet, logout } = useWallet();
   const [transactions, setTransactions] = useState<Array<{ id: string; timestamp: number }>>([]);
 
   const createJuiceEffect = useCallback((x: number, y: number) => {
