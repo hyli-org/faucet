@@ -17,5 +17,5 @@ contract1 = { path = "contracts/contract1", package = "contract1" }
 version = "0.4.1"
 edition = "2021"
 
-[patch.crates-io]
-sha2 = { git = "https://github.com/sp1-patches/RustCrypto-hashes", package = "sha2", tag = "patch-sha2-0.10.8-sp1-4.0.0" }
+#[patch.crates-io]
+#sha2 = { git = "https://github.com/sp1-patches/RustCrypto-hashes", package = "sha2", tag = "patch-sha2-0.10.8-sp1-4.0.0" }
