@@ -123,7 +123,6 @@ const INITIAL_SPEED = 1;
 
 function App() {
   const { isLoading: isLoadingConfig, error: _configError } = useConfig();
-  const [debugMode, _setDebugMode] = useState(false);
   const [count, setCount] = useState(() => Number(localStorage.getItem('count')) || 0);
   const [oranges, setOranges] = useState<Orange[]>([]);
   const [bombs, setBombs] = useState<Bomb[]>([]);
@@ -514,13 +513,21 @@ function App() {
     isMouseDown.current = false;
   }, [createSliceEffect]);
 
-  const spawnOrange = () => {
+
+  let lastSpawnTime = performance.now();
+  const spawnOrange = (currentTime: number) => {
     if (!gameAreaRef.current) return;
 
-    // In debug mode, only spawn if there are no oranges
-    if (debugMode && oranges.length > 0) return;
-
     const gameArea = gameAreaRef.current;
+
+    const timeSinceLastSpawn = currentTime - lastSpawnTime;
+    const clampedWidth = (Math.max(Math.min(gameArea.clientWidth, 1800), 400) - 400) / 1400;
+    const widthMult = 1.2 - 0.6 * clampedWidth;
+    if (timeSinceLastSpawn < SPAWN_INTERVAL * widthMult) {
+      return; // Skip spawning if not enough time has passed
+    }
+    lastSpawnTime = currentTime + Math.random() * SPAWN_INTERVAL * 0.4 - SPAWN_INTERVAL * 0.2;
+
     const x = Math.random() * (gameArea.clientWidth - 50);
 
     // 20% chance to spawn a bomb instead of an orange
@@ -556,23 +563,21 @@ function App() {
 
   // Update orange and bomb positions
   useEffect(() => {
-    let lastSpawnTime = performance.now();
-    const animationFrame = requestAnimationFrame(function animate() {
-      const currentTime = performance.now();
-      const timeSinceLastSpawn = currentTime - lastSpawnTime;
-
-      if (timeSinceLastSpawn >= SPAWN_INTERVAL && !document.hidden) {
-        spawnOrange();
-        lastSpawnTime = currentTime;
+    let currentTime = performance.now();
+    const animationFrame = requestAnimationFrame(function animate(time) {
+      const elapsed = time - currentTime;
+      currentTime = time;
+      if (!document.hidden) {
+        spawnOrange(currentTime);
       }
 
       setOranges(prev =>
         prev
           .map(orange => ({
             ...orange,
-            y: orange.y + orange.speed,
-            speed: orange.speed + GRAVITY,
-            rotation: orange.rotation + 2
+            y: orange.y + orange.speed * (elapsed / 10),
+            speed: orange.speed + GRAVITY * (elapsed / 10),
+            rotation: orange.rotation + 2 * (elapsed / 10)
           }))
           .filter(orange => orange.y < window.innerHeight + 100)
       );
@@ -581,9 +586,9 @@ function App() {
         prev
           .map(bomb => ({
             ...bomb,
-            y: bomb.y + bomb.speed,
-            speed: bomb.speed + GRAVITY,
-            rotation: bomb.rotation + 2
+            y: bomb.y + bomb.speed * (elapsed / 10),
+            speed: bomb.speed + GRAVITY * (elapsed / 10),
+            rotation: bomb.rotation + 2 * (elapsed / 10)
           }))
           .filter(bomb => bomb.y < window.innerHeight + 100)
       );
