@@ -255,9 +255,9 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
 name = "assertables"
-version = "9.5.5"
+version = "9.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46109705783fa5733709a155971ad89cdd188d45b7e20fba7906f0d6b4f864e3"
+checksum = "72129447ae3f06776127f6f88ad9da1f3ad936a20935ea84cc63ef24fdf95b17"
 
 [[package]]
 name = "async-stream"
@@ -640,9 +640,9 @@ checksum = "7575182f7272186991736b70173b0ea045398f984bf5ebbb3804736ce1330c9d"
 
 [[package]]
 name = "bytemuck"
-version = "1.23.0"
+version = "1.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9134a6ef01ce4b366b50689c94f82c14bc72bc5d0386829828a2e2752ef7958c"
+checksum = "5c76a5792e44e4abe34d3abf15636779261d45a7450612059293d1d2cfc63422"
 
 [[package]]
 name = "byteorder"
@@ -1886,7 +1886,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 [[package]]
 name = "hyle-client-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a557872de8c45dddfadda64a60427f713bcb518e"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -1906,7 +1906,7 @@ dependencies = [
 [[package]]
 name = "hyle-contract-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a557872de8c45dddfadda64a60427f713bcb518e"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
 dependencies = [
  "borsh",
  "hyle-model",
@@ -1919,7 +1919,7 @@ dependencies = [
 [[package]]
 name = "hyle-crypto"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a557872de8c45dddfadda64a60427f713bcb518e"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
 dependencies = [
  "anyhow",
  "blst",
@@ -1932,7 +1932,7 @@ dependencies = [
 [[package]]
 name = "hyle-model"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a557872de8c45dddfadda64a60427f713bcb518e"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -1955,7 +1955,7 @@ dependencies = [
 [[package]]
 name = "hyle-modules"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a557872de8c45dddfadda64a60427f713bcb518e"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
 dependencies = [
  "anyhow",
  "anymap",
@@ -1989,7 +1989,7 @@ dependencies = [
 [[package]]
 name = "hyle-net"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a557872de8c45dddfadda64a60427f713bcb518e"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -2015,7 +2015,7 @@ dependencies = [
 [[package]]
 name = "hyle-verifiers"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a557872de8c45dddfadda64a60427f713bcb518e"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
 dependencies = [
  "anyhow",
  "borsh",
@@ -3434,14 +3434,14 @@ dependencies = [
 
 [[package]]
 name = "proptest"
-version = "1.6.0"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14cae93065090804185d3b75f0bf93b8eeda30c7a9b4a33d3bdb3988d6229e50"
+checksum = "6fcdab19deb5195a31cf7726a210015ff1496ba1464fd42cb4f537b8b01b471f"
 dependencies = [
  "bitflags",
  "num-traits",
- "rand 0.8.5",
- "rand_chacha 0.3.1",
+ "rand 0.9.1",
+ "rand_chacha 0.9.0",
  "rand_xorshift",
  "unarray",
 ]
@@ -3614,11 +3614,11 @@ dependencies = [
 
 [[package]]
 name = "rand_xorshift"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d25bf25ec5ae4a3f1b92f929810509a2f53d7dca2f50b794ff57e3face536c8f"
+checksum = "513962919efc330f829edb2535844d1b912b0fbe2ca165d613e4e8788bb05a5a"
 dependencies = [
- "rand_core 0.6.4",
+ "rand_core 0.9.3",
 ]
 
 [[package]]
@@ -4798,9 +4798,9 @@ dependencies = [
 
 [[package]]
 name = "sp1-sdk"
-version = "5.0.3"
+version = "5.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "463909ee4714c1409d8d169bafe7a61a10b4c727a3c715aff1c9b3e93c7d698a"
+checksum = "4e05659d72bc760a14e2a9fb801075d5577453318316b2bd1998e0d2781cbc1b"
 dependencies = [
  "alloy-primitives",
  "anyhow",
