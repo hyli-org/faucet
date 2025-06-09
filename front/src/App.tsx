@@ -118,7 +118,7 @@ const ACHIEVEMENTS: Achievement[] = [
 ];
 
 const SPAWN_INTERVAL = 500;
-const GRAVITY = 0.03;
+const GRAVITY = 0.01;
 const INITIAL_SPEED = 1;
 
 function App() {
@@ -279,7 +279,7 @@ function App() {
           blobs: [blobTransfer, blobClick],
         }
         const txHash = await nodeService.sendBlobTx(blobTx);
-        
+
         // Add transaction to the list
         setTransactions(prev => [{
           id: txHash,
