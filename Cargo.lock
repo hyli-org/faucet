@@ -766,9 +766,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.39"
+version = "4.5.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd60e63e9be68e5fb56422e397cf9baddded06dae1d2e523401542383bc72a9f"
+checksum = "40b6887a1d8685cebccf115538db5c0efe625ccac9696ad45c409d96566e910f"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -776,9 +776,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.39"
+version = "4.5.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89cc6392a1f72bbeb820d71f32108f61fdaf18bc526e1d23954168a67759ef51"
+checksum = "e0c66c08ce9f0c698cbce5c0279d0bb6ac936d8674174fe48f736533b964f59e"
 dependencies = [
  "anstream",
  "anstyle",
@@ -788,9 +788,9 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.5.32"
+version = "4.5.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09176aae279615badda0765c0c0b3f6ed53f4709118af73cf4655d85d1530cd7"
+checksum = "d2c7947ae4cc3d851207c1adb5b5e260ff0cca11446b1d6d1423788e442257ce"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -800,9 +800,9 @@ dependencies = [
 
 [[package]]
 name = "clap_lex"
-version = "0.7.4"
+version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
+checksum = "b94f61472cee1439c0b966b47e3aca9ae07e45d070759512cd390ea2bebc6675"
 
 [[package]]
 name = "colorchoice"
@@ -1886,7 +1886,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 [[package]]
 name = "hyle-client-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#887aeaa81b6dbc14f537e6249ddb2fccf18cbc64"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -1906,7 +1906,7 @@ dependencies = [
 [[package]]
 name = "hyle-contract-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#887aeaa81b6dbc14f537e6249ddb2fccf18cbc64"
 dependencies = [
  "borsh",
  "hyle-model",
@@ -1919,7 +1919,7 @@ dependencies = [
 [[package]]
 name = "hyle-crypto"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#887aeaa81b6dbc14f537e6249ddb2fccf18cbc64"
 dependencies = [
  "anyhow",
  "blst",
@@ -1932,7 +1932,7 @@ dependencies = [
 [[package]]
 name = "hyle-model"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#887aeaa81b6dbc14f537e6249ddb2fccf18cbc64"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -1955,7 +1955,7 @@ dependencies = [
 [[package]]
 name = "hyle-modules"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#887aeaa81b6dbc14f537e6249ddb2fccf18cbc64"
 dependencies = [
  "anyhow",
  "anymap",
@@ -1989,7 +1989,7 @@ dependencies = [
 [[package]]
 name = "hyle-net"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#887aeaa81b6dbc14f537e6249ddb2fccf18cbc64"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -2015,7 +2015,7 @@ dependencies = [
 [[package]]
 name = "hyle-verifiers"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=main#a6519e829482435b8ef33a744e5a75f21375b1bc"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=main#887aeaa81b6dbc14f537e6249ddb2fccf18cbc64"
 dependencies = [
  "anyhow",
  "borsh",
@@ -6235,9 +6235,9 @@ dependencies = [
 
 [[package]]
 name = "yaml-rust2"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18b783b2c2789414f8bb84ca3318fc9c2d7e7be1c22907d37839a58dedb369d3"
+checksum = "4ce2a4ff45552406d02501cea6c18d8a7e50228e7736a872951fe2fe75c91be7"
 dependencies = [
  "arraydeque",
  "encoding_rs",
