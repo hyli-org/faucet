@@ -38,6 +38,13 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.AR_URL }}/${{ env.IMAGE_NAME }}-${{ matrix.suffix }}
+          tags: |
+            type=sha
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=ref,event=branch
+            type=ref,event=pr
 
       - name: Docker Auth
         id: docker-auth
