@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use client_sdk::transaction_builder::TxExecutorHandler;
-use sdk::{utils::as_hyle_output, Blob, Calldata, ZkContract};
+use sdk::{utils::as_hyle_output, Blob, Calldata, StateCommitment, ZkContract};
 
 use crate::Faucet;
 
@@ -19,6 +19,10 @@ impl TxExecutorHandler for Faucet {
             calldata,
             &mut res,
         ))
+    }
+
+    fn get_state_commitment(&self) -> StateCommitment {
+        <Self as ZkContract>::commit(self)
     }
 
     fn construct_state(
