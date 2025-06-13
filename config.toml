@@ -7,3 +7,4 @@ rest_server_max_body_size = 10_485_760
 data_directory = "data"
 buffer_blocks = 0
 max_txs_per_proof = 100
+tx_working_window_size = 500

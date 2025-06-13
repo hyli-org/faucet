@@ -40,6 +40,7 @@ pub struct Conf {
     pub contract_name: String,
     pub buffer_blocks: u32,
     pub max_txs_per_proof: usize,
+    pub tx_working_window_size: usize,
 }
 
 #[tokio::main]
@@ -124,6 +125,7 @@ async fn main() -> Result<()> {
         default_state: Default::default(),
         buffer_blocks: config.buffer_blocks,
         max_txs_per_proof: config.max_txs_per_proof,
+        tx_working_window_size: config.tx_working_window_size,
     });
 
     handler.build_module::<AppModule>(app_ctx.clone()).await?;
