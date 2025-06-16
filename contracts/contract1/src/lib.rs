@@ -29,6 +29,8 @@ pub enum SmtTokenAction {
     },
 }
 
+impl sdk::FullStateRevert for Faucet {}
+
 impl sdk::ZkContract for Faucet {
     /// Entry point of the contract's logic
     fn execute(&mut self, calldata: &sdk::Calldata) -> RunResult {
