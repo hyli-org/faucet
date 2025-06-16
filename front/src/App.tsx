@@ -12,6 +12,8 @@ import slice1 from './audio/slice1.mp3';
 import slice2 from './audio/slice2.mp3';
 import slice3 from './audio/slice3.mp3';
 import bombSound from './audio/bomb.mp3';
+import { declareCustomElement } from 'testnet-maintenance-widget';
+declareCustomElement();
 
 // Mutex implementation
 class Mutex {
@@ -736,49 +738,7 @@ function App() {
         onTouchEnd={handleTouchEnd}
         style={{ touchAction: 'none' }} // Prevent default touch actions
       >
-        {false && (
-          // Testnet off for the night
-          <div style={{
-            position: "fixed",
-            top: "0",
-            left: "0",
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 10000,
-            pointerEvents: "auto",
-            cursor: "auto"
-          }}>
-          <div style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            backgroundColor: "rgba(0, 0, 0, 1.0)",
-            padding: "40px",
-            borderRadius: "20px",
-            textAlign: "center",
-            zIndex: 10000,
-            color: "#ff6b6b",
-            maxWidth: "80%",
-            minWidth: "300px",
-            boxShadow: "0 0 20px rgba(0, 0, 0, 0.5)",
-          }}>
-            <div style={{ display: "flex", justifyContent: "center" }}><img src="/asleep.png" alt="Hyli asleep" style={{
-              borderRadius: "20px",
-              marginBottom: "20px",
-              width: "300px",
-              maxWidth: "100%",
-              maxHeight: "300px",
-            }} /></div>
-            <h2 style={{ color: "var(--color-secondary)", marginBottom: "10px" }}>Hyli is asleep for the night</h2>
-            <p style={{ color: "#ccc" }}>
-              To ensure stability, we've turned access off for now. Check back
-              soon !
-            </p>
-          </div>
-          </div>
-        )}
+        <maintenance-widget nodeurl={nodeService.client.url.origin} />
 
         {!wallet?.address && (
           <div
