@@ -5,7 +5,7 @@ import { nodeService } from './services/NodeService';
 import { BlobTransaction } from 'hyli';
 import { useConfig } from './hooks/useConfig';
 import { transfer } from './types/smt_token';
-import { Leaderboard } from './components/Leaderboard';
+//import { Leaderboard } from './components/Leaderboard';
 import { TransactionList } from './components/TransactionList';
 import { HyliWallet, useWallet } from 'hyli-wallet';
 import slice1 from './audio/slice1.mp3';
@@ -111,10 +111,10 @@ interface ExplosionParticle {
 
 const ACHIEVEMENTS: Achievement[] = [
   { id: 'noob', title: '🎮 Noob Clicker', description: 'Slice 10 oranges', threshold: 10, unlocked: false },
-  { id: 'degen', title: '🚀 True Degen', description: 'Slice 100 oranges', threshold: 100, unlocked: false },
-  { id: 'chad', title: '💪 Gigachad', description: 'Slice 500 oranges', threshold: 500, unlocked: false },
-  { id: 'whale', title: '🐋 Whale Alert', description: 'Slice 1000 oranges', threshold: 1000, unlocked: false },
-  { id: 'sigma', title: '🔥 Sigma Grindset', description: 'Slice 5000 oranges', threshold: 5000, unlocked: false },
+  { id: 'degen', title: '🚀 True Degen', description: 'Slice 50 oranges', threshold: 50, unlocked: false },
+  { id: 'chad', title: '💪 Gigachad', description: 'Slice 100 oranges', threshold: 100, unlocked: false },
+  { id: 'whale', title: '🐋 Whale Alert', description: 'Slice 250 oranges', threshold: 250, unlocked: false },
+  { id: 'sigma', title: '🔥 Sigma Grindset', description: 'Slice 500 oranges', threshold: 500, unlocked: false },
 ];
 
 const SPAWN_INTERVAL = 500;
@@ -736,7 +736,7 @@ function App() {
         onTouchEnd={handleTouchEnd}
         style={{ touchAction: 'none' }} // Prevent default touch actions
       >
-        {true && (
+        {false && (
           // Testnet off for the night
           <div style={{
             position: "fixed",
@@ -919,7 +919,10 @@ function App() {
       }
 
       <div className="achievements-container">
-        <Leaderboard />
+        {
+          // Off for now to avoid incentiving TX spam
+          /*<Leaderboard />*/
+        }
         <div className="achievements">
           <h3>🏆 Achievements</h3>
           <div className="achievement-list">
