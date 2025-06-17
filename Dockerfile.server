@@ -19,7 +19,7 @@ FROM rust:latest
 
 WORKDIR /app
 
-COPY --from=builder /app/target/debug/server ./
+COPY --from=builder /app/target/release/server ./
 
 EXPOSE 4000
 
