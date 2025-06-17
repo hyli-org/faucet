@@ -12,7 +12,7 @@ COPY Cargo.toml .
 COPY Cargo.lock .
 COPY config.toml .
 
-RUN cargo build -p server
+RUN cargo build --release -p server
 
 # RUNNER
 FROM rust:latest
