@@ -1,5 +1,7 @@
 FROM rust:latest AS builder
 
+RUN apt-get update && apt-get -y install curl g++ git libssl-dev pkg-config
+
 RUN curl -L https://sp1up.succinct.xyz | bash
 RUN /root/.sp1/bin/sp1up 
 
