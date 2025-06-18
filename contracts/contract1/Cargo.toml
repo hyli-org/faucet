@@ -20,7 +20,7 @@ borsh = { version = "1.5.7" }
 # sparse-merkle-tree can't be compiled in sp1
 # hyle-smt-token = { workspace = true, default-features = false, features = [] }
 
-sp1-zkvm = { version = "5.0.0", default-features = false, optional = true }
+sp1-zkvm = { version = "=5.0.0", default-features = false, optional = true }
 client-sdk = { workspace = true, default-features = false, features = [
   "sp1",
   "rest",

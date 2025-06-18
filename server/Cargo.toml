@@ -9,7 +9,7 @@ hyle-modules = { workspace = true }
 contract1 = { workspace = true, features = ["client"] }
 contracts = { workspace = true, features = [] }
 
-sp1-sdk = { version = "=5.0.0", default-features = false, features = [
+sp1-sdk = { version = "=5.0.3", default-features = false, features = [
   "network",
 ] }
 
