@@ -21,7 +21,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
-    "testnet-maintenance-widget": "^0.1.0"
+    "testnet-maintenance-widget": "^0.2.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
