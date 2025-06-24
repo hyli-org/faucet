@@ -121,6 +121,7 @@ async fn main() -> Result<()> {
         prover: Arc::new(prover),
         contract_name: contract_name.clone(),
         node: app_ctx.node_client.clone(),
+        api: Some(api.clone()),
         data_directory: config.data_directory.clone(),
         default_state: Default::default(),
         buffer_blocks: config.buffer_blocks,
