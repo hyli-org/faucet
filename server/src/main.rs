@@ -148,6 +148,7 @@ async fn main() -> Result<()> {
         .build_module::<DAListener>(DAListenerConf {
             data_directory: config.data_directory.clone(),
             da_read_from: config.da_read_from.clone(),
+            timeout_client_secs: 10,
             start_block: None,
         })
         .await?;
