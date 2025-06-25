@@ -210,80 +210,76 @@ function App() {
         }, 1000);
     }, []);
 
-    const sliceBomb = useCallback(
-        async (bombId: number) => {
-            if (!wallet || !wallet.address) return;
-            try {
-                await window.bombMutex.acquire();
-                const bomb = bombs.find((b) => b.id === bombId);
-                if (!bomb || bomb.sliced || window.slicedBombs.has(bombId)) return;
+    const sliceBomb = async (bombId: number) => {
+        if (!wallet || !wallet.address) return;
+        try {
+            await window.bombMutex.acquire();
+            const bomb = bombs.find((b) => b.id === bombId);
+            if (!bomb || bomb.sliced || window.slicedBombs.has(bombId)) return;
 
-                // Vibrate for 200ms when slicing a bomb (longer vibration for bombs)
-                if ("vibrate" in navigator) {
-                    navigator.vibrate([1000]);
-                }
-
-                // Play bomb sound
-                const bombAudio = new Audio(bombSound);
-                bombAudio.play();
-
-                // Create explosion effect instead of juice effect
-                createExplosionEffect(bomb.x, bomb.y);
-
-                // Apply cumulative penalty
-                const newPenalty = bombPenalty + 10;
-                setBombPenalty(newPenalty);
-                localStorage.setItem("bombPenalty", newPenalty.toString());
-
-                // Trigger score shake animation
-                setIsScoreShaking(true);
-                setTimeout(() => setIsScoreShaking(false), 500);
-
-                setBombs((prev) => prev.map((b) => (b.id === bombId ? { ...b, sliced: true } : b)));
-
-                window.slicedBombs.add(bombId);
-            } finally {
-                window.bombMutex.release();
+            // Vibrate for 200ms when slicing a bomb (longer vibration for bombs)
+            if ("vibrate" in navigator) {
+                navigator.vibrate([1000]);
             }
-        },
-        [bombs, bombPenalty, createExplosionEffect]
-    );
 
-    const sliceOrange = useCallback(
-        async (orangeId: number) => {
-            if (!wallet || !wallet.address) return;
-            try {
-                await window.orangeMutex.acquire();
-                const orange = oranges.find((o) => o.id === orangeId);
-                if (!orange || orange.sliced || window.slicedOranges.has(orangeId)) return;
+            // Play bomb sound
+            const bombAudio = new Audio(bombSound);
+            bombAudio.play();
 
-                // Vibrate for 50ms when slicing an orange
-                if ("vibrate" in navigator) {
-                    navigator.vibrate(150);
-                }
+            // Create explosion effect instead of juice effect
+            createExplosionEffect(bomb.x, bomb.y);
 
-                // Play random slice sound
-                const sliceSounds = [slice1, slice2, slice3];
-                const randomSound = sliceSounds[Math.floor(Math.random() * sliceSounds.length)];
-                const audio = new Audio(randomSound);
-                audio.play();
+            // Apply cumulative penalty
+            const newPenalty = bombPenalty + 10;
+            setBombPenalty(newPenalty);
+            localStorage.setItem("bombPenalty", newPenalty.toString());
 
-                // Créer l'effet de jus
-                createJuiceEffect(orange.x, orange.y);
+            // Trigger score shake animation
+            setIsScoreShaking(true);
+            setTimeout(() => setIsScoreShaking(false), 500);
 
-                // Only send blob tx if no bomb penalty is active
-                if (bombPenalty === 0) {
-                    // Send blob tx
-                    const blobTransfer = transfer("faucet", wallet.address, "oranj", BigInt(1), 1);
-                    const blobClick = blob_click(0);
+            setBombs((prev) => prev.map((b) => (b.id === bombId ? { ...b, sliced: true } : b)));
 
-                    const identity = `${wallet.address}@${blobClick.contract_name}`;
-                    const blobTx: BlobTransaction = {
-                        identity,
-                        blobs: [blobTransfer, blobClick],
-                    };
-                    const txHash = await nodeService.sendBlobTx(blobTx);
+            window.slicedBombs.add(bombId);
+        } finally {
+            window.bombMutex.release();
+        }
+    };
 
+    const sliceOrange = async (orangeId: number) => {
+        if (!wallet || !wallet.address) return;
+        try {
+            await window.orangeMutex.acquire();
+            const orange = oranges.find((o) => o.id === orangeId);
+            if (!orange || orange.sliced || window.slicedOranges.has(orangeId)) return;
+
+            // Vibrate for 50ms when slicing an orange
+            if ("vibrate" in navigator) {
+                navigator.vibrate(150);
+            }
+
+            // Play random slice sound
+            const sliceSound = [slice1, slice2, slice3];
+            const audio = new Audio(sliceSound[Math.floor(Math.random() * sliceSound.length)]);
+            // Reset audio if already playing
+            audio.currentTime = 0;
+            audio.play();
+
+            // Créer l'effet de jus
+            createJuiceEffect(orange.x, orange.y);
+
+            // Only send blob tx if no bomb penalty is active
+            if (bombPenalty === 0) {
+                // Send blob tx
+                const blobTransfer = transfer("faucet", wallet.address, "oranj", BigInt(1), 1);
+                const blobClick = blob_click(0);
+
+                const identity = `${wallet.address}@${blobClick.contract_name}`;
+                const blobTx: BlobTransaction = {
+                    identity,
+                    blobs: [blobTransfer, blobClick],
+                };
+                nodeService.sendBlobTx(blobTx).then((txHash) => {
                     // Add transaction to the list
                     setTransactions((prev) =>
                         [
@@ -294,24 +290,23 @@ function App() {
                             ...prev,
                         ].slice(0, 10)
                     ); // Keep only the last 10 transactions
+                });
 
-                    setCount((c) => c + 1);
-                } else {
-                    // Reduce bomb penalty
-                    const newPenalty = bombPenalty - 1;
-                    setBombPenalty(newPenalty);
-                    localStorage.setItem("bombPenalty", newPenalty.toString());
-                }
-
-                setOranges((prev) => prev.map((o) => (o.id === orangeId ? { ...o, sliced: true } : o)));
-
-                window.slicedOranges.add(orangeId);
-            } finally {
-                window.orangeMutex.release();
+                setCount((c) => c + 1);
+            } else {
+                // Reduce bomb penalty
+                const newPenalty = bombPenalty - 1;
+                setBombPenalty(newPenalty);
+                localStorage.setItem("bombPenalty", newPenalty.toString());
             }
-        },
-        [oranges, bombPenalty, wallet?.address]
-    );
+
+            setOranges((prev) => prev.map((o) => (o.id === orangeId ? { ...o, sliced: true } : o)));
+
+            window.slicedOranges.add(orangeId);
+        } finally {
+            window.orangeMutex.release();
+        }
+    };
 
     const createSliceEffect = useCallback((points: { x: number; y: number }[]) => {
         if (!gameAreaRef.current || points.length < 2) return;
@@ -778,10 +773,8 @@ function App() {
                             className={`orange ${orange.sliced ? "sliced" : ""}`}
                             style={
                                 {
-                                    left: `${orange.x}px`,
-                                    top: `${orange.y}px`,
                                     "--rotation": `${orange.rotation}deg`,
-                                    transform: `translate(-50%, -50%) rotate(${orange.rotation}deg)`,
+                                    transform: `translateX(${orange.x}px) translateY(${orange.y}px) translate(-50%, -50%) rotate(${orange.rotation}deg)`,
                                 } as React.CSSProperties
                             }
                         />
@@ -791,8 +784,8 @@ function App() {
                                     className="orange-half top"
                                     style={
                                         {
-                                            left: `${orange.x}px`,
-                                            top: `${orange.y}px`,
+                                            "--x-offset": `${orange.x}px`,
+                                            "--y-offset": `${orange.y}px`,
                                             "--rotation": `${orange.rotation}deg`,
                                             "--fly-distance": "-50px",
                                             transform: `translate(-50%, -50%) rotate(${orange.rotation}deg)`,
@@ -803,8 +796,8 @@ function App() {
                                     className="orange-half bottom"
                                     style={
                                         {
-                                            left: `${orange.x}px`,
-                                            top: `${orange.y}px`,
+                                            "--x-offset": `${orange.x}px`,
+                                            "--y-offset": `${orange.y}px`,
                                             "--rotation": `${orange.rotation}deg`,
                                             "--fly-distance": "50px",
                                             transform: `translate(-50%, -50%) rotate(${orange.rotation}deg)`,
@@ -821,10 +814,8 @@ function App() {
                             className={`bomb ${bomb.sliced ? "sliced" : ""}`}
                             style={
                                 {
-                                    left: `${bomb.x}px`,
-                                    top: `${bomb.y}px`,
                                     "--rotation": `${bomb.rotation}deg`,
-                                    transform: `translate(-50%, -50%) rotate(${bomb.rotation}deg)`,
+                                    transform: `translateX(${bomb.x}px) translateY(${bomb.y}px) translate(-50%, -50%) rotate(${bomb.rotation}deg)`,
                                 } as React.CSSProperties
                             }
                         />
@@ -834,11 +825,11 @@ function App() {
                                     className="bomb-half top"
                                     style={
                                         {
-                                            left: `${bomb.x}px`,
-                                            top: `${bomb.y}px`,
+                                            "--x-offset": `${bomb.x}px`,
+                                            "--y-offset": `${bomb.y}px`,
                                             "--rotation": `${bomb.rotation}deg`,
                                             "--fly-distance": "-50px",
-                                            transform: `translate(-50%, -50%) rotate(${bomb.rotation}deg)`,
+                                            transform: `translateX(${bomb.x}px) translateY(${bomb.y}px) translate(-50%, -50%) rotate(${bomb.rotation}deg)`,
                                         } as React.CSSProperties
                                     }
                                 />
@@ -846,11 +837,11 @@ function App() {
                                     className="bomb-half bottom"
                                     style={
                                         {
-                                            left: `${bomb.x}px`,
-                                            top: `${bomb.y}px`,
+                                            "--x-offset": `${bomb.x}px`,
+                                            "--y-offset": `${bomb.y}px`,
                                             "--rotation": `${bomb.rotation}deg`,
                                             "--fly-distance": "50px",
-                                            transform: `translate(-50%, -50%) rotate(${bomb.rotation}deg)`,
+                                            transform: `translateX(${bomb.x}px) translateY(${bomb.y}px) translate(-50%, -50%) rotate(${bomb.rotation}deg)`,
                                         } as React.CSSProperties
                                     }
                                 />
@@ -864,8 +855,9 @@ function App() {
                         className="orange-juice"
                         style={
                             {
-                                left: `${particle.x}px`,
-                                top: `${particle.y}px`,
+                                /*left: `${particle.x}px`,
+                                top: `${particle.y}px`,*/
+                                transform: `translateX(${particle.x}px) translateY(${particle.y}px)`,
                                 opacity: Math.max(0, 1 - particle.time / 1.5),
                             } as React.CSSProperties
                         }

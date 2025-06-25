@@ -362,12 +362,11 @@ body {
     position: absolute;
     width: 50px;
     height: 50px;
-    background-image: url(/orange.svg);
+    background-image: url(/orange.png);
     background-size: contain;
     background-repeat: no-repeat;
     pointer-events: none;
     transform-origin: center;
-    transition: transform 0.2s ease-out;
 }
 
 .orange.sliced {
@@ -387,7 +386,7 @@ body {
     position: absolute;
     width: 50px;
     height: 50px;
-    background-image: url(/orange.svg);
+    background-image: url(/orange.png);
     background-size: contain;
     background-repeat: no-repeat;
     pointer-events: none;
@@ -397,22 +396,26 @@ body {
 
 .orange-half.top {
     clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
-    transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(-10px);
+    transform: translateX(var(--x-offset)) translateY(var(--y-offset)) translate(-50%, -50%) rotate(var(--rotation))
+        translateY(-10px);
 }
 
 .orange-half.bottom {
     clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
-    transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(10px);
+    transform: translateX(var(--x-offset)) translateY(var(--y-offset)) translate(-50%, -50%) rotate(var(--rotation))
+        translateY(10px);
 }
 
 @keyframes flyAway {
     0% {
         opacity: 1;
-        transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(0);
+        transform: translateX(var(--x-offset)) translateY(var(--y-offset)) translate(-50%, -50%) rotate(var(--rotation))
+            translateY(0);
     }
     100% {
         opacity: 0;
-        transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(var(--fly-distance));
+        transform: translateX(var(--x-offset)) translateY(var(--y-offset)) translate(-50%, -50%) rotate(var(--rotation))
+            translateY(var(--fly-distance));
     }
 }
 
@@ -677,12 +680,11 @@ pre {
     position: absolute;
     width: 50px;
     height: 50px;
-    background-image: url(/bomb.svg);
+    background-image: url(/bomb.png);
     background-size: contain;
     background-repeat: no-repeat;
     pointer-events: none;
     transform-origin: center;
-    transition: transform 0.2s ease-out;
 }
 
 .bomb.sliced {
@@ -693,7 +695,7 @@ pre {
     position: absolute;
     width: 50px;
     height: 50px;
-    background-image: url(/bomb.svg);
+    background-image: url(/bomb.png);
     background-size: contain;
     background-repeat: no-repeat;
     pointer-events: none;
@@ -703,12 +705,14 @@ pre {
 
 .bomb-half.top {
     clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
-    transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(-10px);
+    transform: translateX(var(--x-offset)) translateY(var(--y-offset)) translate(-50%, -50%) rotate(var(--rotation))
+        translateY(-10px);
 }
 
 .bomb-half.bottom {
     clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
-    transform: translate(-50%, -50%) rotate(var(--rotation)) translateY(10px);
+    transform: translateX(var(--x-offset)) translateY(var(--y-offset)) translate(-50%, -50%) rotate(var(--rotation))
+        translateY(10px);
 }
 
 /* Media query pour les écrans plus larges */
