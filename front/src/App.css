@@ -360,9 +360,9 @@ body {
 
 .orange {
     position: absolute;
-    width: 50px;
-    height: 50px;
-    background-image: url(/orange.png);
+    width: 60px;
+    height: 60px;
+    background-image: url(/berry.png);
     background-size: contain;
     background-repeat: no-repeat;
     pointer-events: none;
@@ -384,9 +384,9 @@ body {
 
 .orange-half {
     position: absolute;
-    width: 50px;
-    height: 50px;
-    background-image: url(/orange.png);
+    width: 60px;
+    height: 60px;
+    background-image: url(/berry.png);
     background-size: contain;
     background-repeat: no-repeat;
     pointer-events: none;
