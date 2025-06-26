@@ -17,11 +17,11 @@
         "elliptic": "^6.6.1",
         "hyli": "^0.3.0",
         "hyli-check-secret": "^0.3.5",
-        "hyli-wallet": "^0.3.5",
+        "hyli-wallet": "^0.3.6",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "react-router-dom": "^7.6.2",
-        "testnet-maintenance-widget": "^0.2.3"
+        "testnet-maintenance-widget": "^0.2.4"
     },
     "devDependencies": {
         "@eslint/js": "^9.29.0",
