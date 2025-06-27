@@ -722,6 +722,15 @@ pre {
     }
 }
 
+@media (min-width: 1080px) {
+    .desktopOnly {
+        display: block !important;
+    }
+    .achievements-container {
+        flex-direction: row;
+    }
+}
+
 @keyframes shake {
     0%,
     100% {

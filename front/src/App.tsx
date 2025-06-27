@@ -148,6 +148,25 @@ function App() {
     const { wallet, logout } = useWallet();
     const [transactions, setTransactions] = useState<Array<{ id: string; timestamp: number }>>([]);
 
+    const [moreInfoModalOpacity, setMoreInfoModalOpacity] = useState(0);
+    const MODAL_ID = "boundless";
+    const [hideModal, setHideModal] = useState(localStorage.getItem("hideMoreInfoModal") === MODAL_ID);
+    useEffect(() => {
+        // After a couple second, turn on the modal
+        const timer = setTimeout(() => {
+            setMoreInfoModalOpacity(1);
+        }, 2000);
+        return () => clearTimeout(timer);
+    }, []);
+    useEffect(() => {
+        // Save hide modal state to localStorage
+        if (!hideModal) {
+            localStorage.removeItem("hideMoreInfoModal");
+        } else {
+            localStorage.setItem("hideMoreInfoModal", MODAL_ID);
+        }
+    }, [hideModal]);
+
     const createJuiceEffect = useCallback((x: number, y: number) => {
         const particles: JuiceParticle[] = [];
         const particleCount = 12; // Nombre de particules de jus
@@ -731,6 +750,32 @@ function App() {
             </div>
 
             <div
+                className="wallet-address desktopOnly"
+                style={{
+                    display: "none",
+                    width: "auto",
+                    position: "absolute",
+                    top: "20px",
+                    right: "20px",
+                    padding: "4px 10px",
+                    fontSize: "1.0em",
+                    maxWidth: "300px",
+                    height: "60px",
+                }}
+            >
+                Want to know the secret sauce?
+                <br />
+                <a
+                    href="https://x.com/hyli_org/status/1935058978813395030"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#fff", textDecoration: "underline" }}
+                >
+                    Read more here
+                </a>
+            </div>
+
+            <div
                 ref={gameAreaRef}
                 className="game-area"
                 onMouseDown={handleMouseDown}
@@ -881,6 +926,63 @@ function App() {
                         }}
                     />
                 ))}
+
+                <div
+                    className={hideModal ? "" : "desktopOnly"}
+                    style={{
+                        display: "none",
+                        position: "absolute",
+                        bottom: "20px",
+                        right: "20px",
+                        backgroundColor: "rgba(0, 0, 0, 0.8)",
+                        padding: "8px 16px",
+                        borderRadius: "10px",
+                        textAlign: "center",
+                        zIndex: 1000,
+                        color: "#ff6b6b",
+                        boxShadow: "0 0 20px rgba(0, 0, 0, 0.5)",
+                        maxWidth: "260px",
+                        opacity: moreInfoModalOpacity,
+                        transition: "opacity 0.5s ease-in-out",
+                    }}
+                >
+                    <button
+                        onClick={() => setHideModal(true)}
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            right: 4,
+                            background: "transparent",
+                            border: "none",
+                            color: "#ffffff",
+                            fontSize: 20,
+                            cursor: "pointer",
+                            zIndex: 1001,
+                        }}
+                        aria-label="Close"
+                    >
+                        &times;
+                    </button>
+                    <h3
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "10px",
+                            alignItems: "center",
+                            margin: "0 0 10px 0",
+                        }}
+                    >
+                        Hyli x Boundless <img src="/berry.png" alt="Berrified" style={{ width: "24px" }}></img>{" "}
+                    </h3>
+                    <p style={{ textAlign: "left", fontSize: "0.9em" }}>
+                        Hyli is partnering with Boundless for our Risc0 Proofs!
+                        <br />
+                        Read more on{" "}
+                        <a style={{ color: "#ff9b6b" }} href="https://x.com/hyli_org/status/1938586176740598170">
+                            X
+                        </a>
+                    </p>
+                </div>
             </div>
 
             {lastAchievement && (
