@@ -360,8 +360,19 @@ body {
 
 .orange {
     position: absolute;
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
+    background-image: url(/orange.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    transform-origin: center;
+}
+
+.berry {
+    position: absolute;
+    width: 50px;
+    height: 50px;
     background-image: url(/berry.png);
     background-size: contain;
     background-repeat: no-repeat;
@@ -369,7 +380,7 @@ body {
     transform-origin: center;
 }
 
-.orange.sliced {
+.sliced {
     animation: sliceOrange 0.3s ease-out forwards;
 }
 
@@ -382,10 +393,22 @@ body {
     }
 }
 
-.orange-half {
+.orange.half {
     position: absolute;
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
+    background-image: url(/orange.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    transform-origin: center;
+    animation: flyAway 0.5s ease-out forwards;
+}
+
+.berry.half {
+    position: absolute;
+    width: 50px;
+    height: 50px;
     background-image: url(/berry.png);
     background-size: contain;
     background-repeat: no-repeat;
@@ -394,13 +417,13 @@ body {
     animation: flyAway 0.5s ease-out forwards;
 }
 
-.orange-half.top {
+.half.top {
     clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
     transform: translateX(var(--x-offset)) translateY(var(--y-offset)) translate(-50%, -50%) rotate(var(--rotation))
         translateY(-10px);
 }
 
-.orange-half.bottom {
+.half.bottom {
     clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
     transform: translateX(var(--x-offset)) translateY(var(--y-offset)) translate(-50%, -50%) rotate(var(--rotation))
         translateY(10px);
@@ -685,10 +708,6 @@ pre {
     background-repeat: no-repeat;
     pointer-events: none;
     transform-origin: center;
-}
-
-.bomb.sliced {
-    animation: sliceOrange 0.3s ease-out forwards;
 }
 
 .bomb-half {

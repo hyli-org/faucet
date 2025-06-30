@@ -815,7 +815,7 @@ function App() {
                 {oranges.map((orange) => (
                     <div key={orange.id}>
                         <div
-                            className={`orange ${orange.sliced ? "sliced" : ""}`}
+                            className={`${orange.id % 2 === 0 ? "berry" : "orange"} ${orange.sliced ? "sliced" : ""}`}
                             style={
                                 {
                                     "--rotation": `${orange.rotation}deg`,
@@ -826,7 +826,7 @@ function App() {
                         {orange.sliced && (
                             <>
                                 <div
-                                    className="orange-half top"
+                                    className={`${orange.id % 2 === 0 ? "berry" : "orange"} half top`}
                                     style={
                                         {
                                             "--x-offset": `${orange.x}px`,
@@ -838,7 +838,7 @@ function App() {
                                     }
                                 />
                                 <div
-                                    className="orange-half bottom"
+                                    className={`${orange.id % 2 === 0 ? "berry" : "orange"} half bottom`}
                                     style={
                                         {
                                             "--x-offset": `${orange.x}px`,
