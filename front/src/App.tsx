@@ -815,7 +815,7 @@ function App() {
                 {oranges.map((orange) => (
                     <div key={orange.id}>
                         <div
-                            className={`${orange.id % 2 === 0 ? "berry" : "orange"} ${orange.sliced ? "sliced" : ""}`}
+                            className={`orange ${orange.sliced ? "sliced" : ""}`}
                             style={
                                 {
                                     "--rotation": `${orange.rotation}deg`,
@@ -826,7 +826,7 @@ function App() {
                         {orange.sliced && (
                             <>
                                 <div
-                                    className={`${orange.id % 2 === 0 ? "berry" : "orange"} half top`}
+                                    className={`orange half top`}
                                     style={
                                         {
                                             "--x-offset": `${orange.x}px`,
@@ -838,7 +838,7 @@ function App() {
                                     }
                                 />
                                 <div
-                                    className={`${orange.id % 2 === 0 ? "berry" : "orange"} half bottom`}
+                                    className={`orange half bottom`}
                                     style={
                                         {
                                             "--x-offset": `${orange.x}px`,
@@ -927,62 +927,64 @@ function App() {
                     />
                 ))}
 
-                <div
-                    className={hideModal ? "" : "desktopOnly"}
-                    style={{
-                        display: "none",
-                        position: "absolute",
-                        bottom: "20px",
-                        right: "20px",
-                        backgroundColor: "rgba(0, 0, 0, 0.8)",
-                        padding: "8px 16px",
-                        borderRadius: "10px",
-                        textAlign: "center",
-                        zIndex: 1000,
-                        color: "#ff6b6b",
-                        boxShadow: "0 0 20px rgba(0, 0, 0, 0.5)",
-                        maxWidth: "260px",
-                        opacity: moreInfoModalOpacity,
-                        transition: "opacity 0.5s ease-in-out",
-                    }}
-                >
-                    <button
-                        onClick={() => setHideModal(true)}
+                {false && (
+                    <div
+                        className={hideModal ? "" : "desktopOnly"}
                         style={{
+                            display: "none",
                             position: "absolute",
-                            top: 0,
-                            right: 4,
-                            background: "transparent",
-                            border: "none",
-                            color: "#ffffff",
-                            fontSize: 20,
-                            cursor: "pointer",
-                            zIndex: 1001,
-                        }}
-                        aria-label="Close"
-                    >
-                        &times;
-                    </button>
-                    <h3
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            gap: "10px",
-                            alignItems: "center",
-                            margin: "0 0 10px 0",
+                            bottom: "20px",
+                            right: "20px",
+                            backgroundColor: "rgba(0, 0, 0, 0.8)",
+                            padding: "8px 16px",
+                            borderRadius: "10px",
+                            textAlign: "center",
+                            zIndex: 1000,
+                            color: "#ff6b6b",
+                            boxShadow: "0 0 20px rgba(0, 0, 0, 0.5)",
+                            maxWidth: "260px",
+                            opacity: moreInfoModalOpacity,
+                            transition: "opacity 0.5s ease-in-out",
                         }}
                     >
-                        Hyli x Boundless <img src="/berry.png" alt="Berrified" style={{ width: "24px" }}></img>{" "}
-                    </h3>
-                    <p style={{ textAlign: "left", fontSize: "0.9em" }}>
-                        Hyli is partnering with Boundless for our Risc0 Proofs!
-                        <br />
-                        Read more on{" "}
-                        <a style={{ color: "#ff9b6b" }} href="https://x.com/hyli_org/status/1938586176740598170">
-                            X
-                        </a>
-                    </p>
-                </div>
+                        <button
+                            onClick={() => setHideModal(true)}
+                            style={{
+                                position: "absolute",
+                                top: 0,
+                                right: 4,
+                                background: "transparent",
+                                border: "none",
+                                color: "#ffffff",
+                                fontSize: 20,
+                                cursor: "pointer",
+                                zIndex: 1001,
+                            }}
+                            aria-label="Close"
+                        >
+                            &times;
+                        </button>
+                        <h3
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                gap: "10px",
+                                alignItems: "center",
+                                margin: "0 0 10px 0",
+                            }}
+                        >
+                            Hyli x Boundless <img src="/berry.png" alt="Berrified" style={{ width: "24px" }}></img>{" "}
+                        </h3>
+                        <p style={{ textAlign: "left", fontSize: "0.9em" }}>
+                            Hyli is partnering with Boundless for our Risc0 Proofs!
+                            <br />
+                            Read more on{" "}
+                            <a style={{ color: "#ff9b6b" }} href="https://x.com/hyli_org/status/1938586176740598170">
+                                X
+                            </a>
+                        </p>
+                    </div>
+                )}
             </div>
 
             {lastAchievement && (
