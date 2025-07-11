@@ -124,6 +124,7 @@ async fn main() -> Result<()> {
         prover: Arc::new(prover),
         contract_name: contract_name.clone(),
         node: app_ctx.node_client.clone(),
+        api: Some(api.clone()),
         data_directory: config.data_directory.clone(),
         default_state: Default::default(),
         buffer_blocks: config.buffer_blocks,
@@ -150,6 +151,7 @@ async fn main() -> Result<()> {
         .build_module::<DAListener>(DAListenerConf {
             data_directory: config.data_directory.clone(),
             da_read_from: config.da_read_from.clone(),
+            timeout_client_secs: 10,
             start_block: None,
         })
         .await?;
@@ -178,35 +180,8 @@ async fn main() -> Result<()> {
         })
         .await?;
 
-    #[cfg(unix)]
-    {
-        use tokio::signal::unix;
-        let mut terminate = unix::signal(unix::SignalKind::interrupt())?;
-        tokio::select! {
-            Err(e) = handler.start_modules() => {
-                error!("Error running modules: {:?}", e);
-            }
-            _ = tokio::signal::ctrl_c() => {
-                info!("Ctrl-C received, shutting down");
-            }
-            _ = terminate.recv() =>  {
-                info!("SIGTERM received, shutting down");
-            }
-        }
-        _ = handler.shutdown_modules().await;
-    }
-    #[cfg(not(unix))]
-    {
-        tokio::select! {
-            Err(e) = handler.start_modules() => {
-                error!("Error running modules: {:?}", e);
-            }
-            _ = tokio::signal::ctrl_c() => {
-                info!("Ctrl-C received, shutting down");
-            }
-        }
-        _ = handler.shutdown_modules().await;
-    }
+    handler.start_modules().await?;
+    handler.exit_process().await?;
 
     Ok(())
 }

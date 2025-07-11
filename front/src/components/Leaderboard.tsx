@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { nodeService } from '../services/NodeService';
-import './Leaderboard.css';
+import { useState, useEffect } from "react";
+import { nodeService } from "../services/NodeService";
+import "./Leaderboard.css";
 
 interface LeaderboardEntry {
   address: string;
@@ -15,6 +15,7 @@ interface LeaderboardEntry {
 
 interface IndexerResponse {
   [key: string]: number;
+
 }
 
 export function Leaderboard() {
@@ -22,13 +23,14 @@ export function Leaderboard() {
   const [error, setError] = useState<string | null>(null);
   const [refreshProgress, setRefreshProgress] = useState(0);
 
+
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
         setError(null);
         const response = await nodeService.server.get<IndexerResponse>(
-          'v1/indexer/contract/faucet/leaderboard',
-          'get leaderboard'
+          "v1/indexer/contract/faucet/leaderboard",
+          "get leaderboard"
         );
 
         // Filter out faucet addresses, sort by balance in descending order and take top 15
@@ -43,8 +45,8 @@ export function Leaderboard() {
         setEntries(sortedEntries);
         setRefreshProgress(0);
       } catch (err) {
-        setError('Failed to load leaderboard');
-        console.error('Error fetching leaderboard:', err);
+        setError("Failed to load leaderboard");
+        console.error("Error fetching leaderboard:", err);
       }
     };
 
@@ -53,7 +55,7 @@ export function Leaderboard() {
 
     // Progress bar animation
     const progressInterval = setInterval(() => {
-      setRefreshProgress(prev => {
+      setRefreshProgress((prev) => {
         return prev + 1;
       });
     }, 100);
@@ -88,4 +90,4 @@ export function Leaderboard() {
       </div>
     </div>
   );
-} 
+}

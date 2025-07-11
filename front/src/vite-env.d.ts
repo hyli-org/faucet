@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
 interface Window {
-  cheatMode: boolean;
-  apiKey: string;
+    cheatMode: boolean;
+    apiKey: string;
 }
