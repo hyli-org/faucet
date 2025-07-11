@@ -7,14 +7,14 @@ interface LeaderboardEntry {
   balance: number;
 }
 
-interface OranjStateEntry {
-  address: string;
-  balance: number;
-  allowances: Record<string, unknown>;
-}
+// interface OranjStateEntry {
+//   address: string;
+//   balance: number;
+//   allowances: Record<string, unknown>;
+// }
 
 interface IndexerResponse {
-  [key: string]: OranjStateEntry;
+  [key: string]: number;
 }
 
 export function Leaderboard() {
@@ -26,20 +26,19 @@ export function Leaderboard() {
     const fetchLeaderboard = async () => {
       try {
         setError(null);
-        const response = await nodeService.indexer.get<IndexerResponse>(
-          'v1/indexer/contract/oranj/state',
+        const response = await nodeService.server.get<IndexerResponse>(
+          'v1/indexer/contract/faucet/leaderboard',
           'get leaderboard'
         );
 
         // Filter out faucet addresses, sort by balance in descending order and take top 15
-        const sortedEntries = Object.values(response)
-          .filter(entry => entry.address != 'faucet' && entry.address != "faucet@hydentity" && entry.address != 'blackjack' && entry.address != 'hyli@wallet')
-          .map(({ address, balance }) => ({
+        const sortedEntries = Object.entries(response)
+          .sort((a, b) => b[1] - a[1])
+          .map(([address, balance]) => ({
             address,
-            balance: Number(balance)
+            balance: Number(balance),
           }))
-          .sort((a, b) => b.balance - a.balance)
-          .slice(0, 15);
+          .slice(0, 30);
 
         setEntries(sortedEntries);
         setRefreshProgress(0);

@@ -13,6 +13,7 @@ import slice2 from './audio/slice2.mp3';
 import slice3 from './audio/slice3.mp3';
 import bombSound from './audio/bomb.mp3';
 import { declareCustomElement } from 'testnet-maintenance-widget';
+import { Leaderboard } from './components/Leaderboard';
 declareCustomElement();
 
 // Mutex implementation
@@ -272,13 +273,13 @@ function App() {
       // Only send blob tx if no bomb penalty is active
       if (bombPenalty === 0) {
         // Send blob tx 
-        const blobTransfer = transfer("faucet", wallet.address, "oranj", BigInt(1), 1);
+        // const blobTransfer = transfer("faucet", wallet.address, "oranj", BigInt(1), 1);
         const blobClick = blob_click(0);
 
         const identity = `${wallet.address}@${blobClick.contract_name}`;
         const blobTx: BlobTransaction = {
           identity,
-          blobs: [blobTransfer, blobClick],
+          blobs: [blobClick],
         }
         const txHash = await nodeService.sendBlobTx(blobTx);
 
@@ -881,7 +882,7 @@ function App() {
       <div className="achievements-container">
         {
           // Off for now to avoid incentiving TX spam
-          /*<Leaderboard />*/
+          <Leaderboard />
         }
         <div className="achievements">
           <h3>🏆 Achievements</h3>

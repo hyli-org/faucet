@@ -60,7 +60,8 @@ export const blob_click = (callee: number): Blob => {
 
   const structured: StructuredBlobData<Nonced<FaucetAction>> = {
     caller: null,
-    callees: [{ 0: callee }],
+    // callees: [{ 0: callee }],
+    callees: null,
     parameters: action,
   };
 
