@@ -111,6 +111,17 @@ interface ExplosionParticle {
   time: number;
 }
 
+interface ButtonParticle {
+  id: number;
+  x: number;
+  y: number;
+  velocityX: number;
+  velocityY: number;
+  opacity: number;
+  size: number;
+  rotation: number;
+}
+
 const ACHIEVEMENTS: Achievement[] = [
   { id: "noob", title: "🎮 Noob Clicker", description: "Slice 10 oranges", threshold: 10, unlocked: false },
   { id: "degen", title: "🚀 True Degen", description: "Slice 50 oranges", threshold: 50, unlocked: false },
@@ -130,6 +141,13 @@ function App() {
   const [bombs, setBombs] = useState<Bomb[]>([]);
   const [bombPenalty, setBombPenalty] = useState(() => Number(localStorage.getItem("bombPenalty")) || 0);
   const [isScoreShaking, setIsScoreShaking] = useState(false);
+  const [isButtonPressed, setIsButtonPressed] = useState(false);
+  const [showButtonModal, setShowButtonModal] = useState(false);
+  const [clicksPerSecond, setClicksPerSecond] = useState(0);
+  const clickTimestamps = useRef<number[]>([]);
+  const smoothedClicksPerSecond = useRef(0);
+  const [buttonParticles, setButtonParticles] = useState<ButtonParticle[]>([]);
+  const nextButtonParticleId = useRef(0);
   const gameAreaRef = useRef<HTMLDivElement>(null);
   const nextOrangeId = useRef(0);
   const lastMousePosition = useRef({ x: 0, y: 0 });
@@ -325,6 +343,116 @@ function App() {
     } finally {
       window.orangeMutex.release();
     }
+  };
+
+  const createButtonParticles = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const particleCount = 5 + Math.floor(Math.random() * 3); // 5-7 particles
+    const newParticles: ButtonParticle[] = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
+      const speed = 3 + Math.random() * 4;
+      
+      newParticles.push({
+        id: nextButtonParticleId.current++,
+        x: centerX + (Math.random() - 0.5) * 50,
+        y: centerY + (Math.random() - 0.5) * 50,
+        velocityX: Math.cos(angle) * speed,
+        velocityY: Math.sin(angle) * speed - 2, // Slight upward bias
+        opacity: 1,
+        size: 20 + Math.random() * 15,
+        rotation: Math.random() * 360,
+      });
+    }
+    
+    setButtonParticles(prev => [...prev, ...newParticles]);
+  };
+
+  const handleBigRedButton = async (e?: React.MouseEvent<HTMLDivElement>) => {
+    if (!wallet || !wallet.address) return;
+    
+    // Create particles if event is provided
+    if (e) {
+      createButtonParticles(e);
+    }
+    
+    // Track click timestamp
+    const now = Date.now();
+    clickTimestamps.current.push(now);
+    
+    // Remove clicks older than 1 second
+    clickTimestamps.current = clickTimestamps.current.filter(timestamp => now - timestamp < 1000);
+    
+    // Set button pressed state
+    setIsButtonPressed(true);
+    
+    // Play sound effect
+    const sliceSound = [slice1, slice2, slice3];
+    const audio = new Audio(sliceSound[Math.floor(Math.random() * sliceSound.length)]);
+    audio.currentTime = 0;
+    audio.play();
+    
+    // Vibrate if available
+    if ("vibrate" in navigator) {
+      navigator.vibrate(150);
+    }
+    
+    // Calculate boost multiplier based on click speed
+    const currentSpeed = smoothedClicksPerSecond.current;
+    let multiplier = 1;
+    if (currentSpeed >= 9) {
+      multiplier = 3;
+    } else if (currentSpeed >= 5) {
+      multiplier = 2;
+    }
+    
+    // Only send blob tx if no bomb penalty is active
+    if (bombPenalty === 0) {
+      // Send multiple transactions based on multiplier
+      const sendTransactions = async () => {
+        for (let i = 0; i < multiplier; i++) {
+          const blobClick = blob_click(0);
+          const identity = `${wallet.address}@${blobClick.contract_name}`;
+          const blobTx: BlobTransaction = {
+            identity,
+            blobs: [blobClick],
+          };
+          
+          nodeService.sendBlobTx(blobTx).then((txHash) => {
+            setTransactions((prev) =>
+              [
+                {
+                  id: txHash,
+                  timestamp: Date.now(),
+                },
+                ...prev,
+              ].slice(0, 10)
+            );
+          });
+          
+          // Wait 1ms between transactions if there are more to send
+          if (i < multiplier - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1));
+          }
+        }
+      };
+      
+      sendTransactions();
+      setCount((c) => c + multiplier);
+    } else {
+      // Reduce bomb penalty by multiplier
+      const newPenalty = Math.max(0, bombPenalty - multiplier);
+      setBombPenalty(newPenalty);
+    }
+    
+    // Reset button after a short delay
+    setTimeout(() => {
+      setIsButtonPressed(false);
+    }, 100);
   };
 
   const createSliceEffect = useCallback((points: { x: number; y: number }[]) => {
@@ -685,6 +813,46 @@ function App() {
     return () => cancelAnimationFrame(animationFrame);
   }, []);
 
+  // Decay click speed over time with smoothing
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      clickTimestamps.current = clickTimestamps.current.filter(timestamp => now - timestamp < 1000);
+      
+      // Calculate raw clicks per second
+      const rawCPS = clickTimestamps.current.length;
+      
+      // Apply exponential smoothing for smoother transitions
+      const smoothingFactor = 0.3; // Higher = more responsive, lower = smoother
+      smoothedClicksPerSecond.current = smoothingFactor * rawCPS + (1 - smoothingFactor) * smoothedClicksPerSecond.current;
+      
+      setClicksPerSecond(smoothedClicksPerSecond.current);
+    }, 16); // Update every frame (~60fps) for maximum smoothness
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Update button particles
+  useEffect(() => {
+    const animationFrame = requestAnimationFrame(function animate() {
+      setButtonParticles((prev) => 
+        prev
+          .map((particle) => ({
+            ...particle,
+            x: particle.x + particle.velocityX,
+            y: particle.y + particle.velocityY,
+            velocityY: particle.velocityY + 0.3, // Gravity
+            opacity: particle.opacity - 0.02,
+            rotation: particle.rotation + 5,
+          }))
+          .filter((particle) => particle.opacity > 0)
+      );
+      requestAnimationFrame(animate);
+    });
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
+  
   // Update explosion particles
   useEffect(() => {
     const animationFrame = requestAnimationFrame(function animate() {
@@ -720,6 +888,303 @@ function App() {
 
   return (
     <div className="App">
+      {/* Logo */}
+      <img
+        src="/wordart.png"
+        alt="Logo"
+        style={{
+          position: "absolute",
+          top: "20px",
+          left: "20px",
+          height: "80px",
+          width: "auto",
+          zIndex: 100,
+          filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.5))",
+        }}
+        className="logo-responsive"
+      />
+      
+      {/* Big Red Button Modal */}
+      {showButtonModal && (
+        <>
+          {/* Backdrop */}
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.8)",
+              zIndex: 999,
+            }}
+            onClick={() => setShowButtonModal(false)}
+          />
+          
+          {/* Modal */}
+          <div
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "#2c3e50",
+              border: "3px solid #ff9500",
+              borderRadius: "20px",
+              padding: "40px",
+              zIndex: 1000,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              boxShadow: "0 0 50px rgba(255, 149, 0, 0.6)",
+              background: "linear-gradient(135deg, #2c3e50 0%, #1a252f 100%)",
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowButtonModal(false)}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "transparent",
+                border: "none",
+                color: "#ff9500",
+                fontSize: "24px",
+                cursor: "pointer",
+                padding: "5px",
+              }}
+            >
+              ✕
+            </button>
+            
+            <h2 style={{ 
+              color: "#ff9500", 
+              marginBottom: "20px", 
+              textAlign: "center",
+              fontSize: "2.5rem",
+              textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+              fontWeight: "bold",
+            }}>
+              {wallet?.address ? "🍊 FREE ORANJ! 🍊" : "Connect Wallet First"}
+            </h2>
+            
+            {/* Click Speed Gauge */}
+            <div style={{
+              width: "400px",
+              marginBottom: "20px",
+            }}>
+              <div style={{
+                fontSize: "1.2rem",
+                color: "#fff",
+                marginBottom: "10px",
+                textAlign: "center",
+                position: "relative",
+              }}>
+                Click Speed: {clicksPerSecond.toFixed(1)} clicks/sec
+                {/* Boost Indicator */}
+                {clicksPerSecond >= 5 && (
+                  <span style={{
+                    marginLeft: "10px",
+                    fontSize: "1.4rem",
+                    fontWeight: "bold",
+                    color: clicksPerSecond >= 9 ? "#e74c3c" : "#f39c12",
+                    textShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                    animation: "bounce 0.5s ease-in-out infinite",
+                  }}>
+                    {clicksPerSecond >= 9 ? "3X BOOST! 🚀" : "2X BOOST! 🔥"}
+                  </span>
+                )}
+              </div>
+              
+              {/* Gauge Background */}
+              <div style={{
+                width: "100%",
+                height: "40px",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "20px",
+                position: "relative",
+                overflow: "hidden",
+                border: "2px solid rgba(255, 255, 255, 0.3)",
+              }}>
+                {/* Gauge Fill */}
+                <div style={{
+                  width: `${Math.min((clicksPerSecond / 10) * 100, 100)}%`,
+                  height: "100%",
+                  background: `linear-gradient(90deg, 
+                    #2ecc71 0%, 
+                    #f1c40f 33%, 
+                    #e67e22 66%, 
+                    #e74c3c 100%)`,
+                  borderRadius: "18px",
+                  transition: "width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  position: "relative",
+                }}>
+                  {/* Glow effect */}
+                  <div style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "rgba(255, 255, 255, 0.3)",
+                    filter: "blur(10px)",
+                    animation: clicksPerSecond > 5 ? "pulse 0.5s ease-in-out infinite" : "none",
+                  }} />
+                </div>
+                
+                {/* Boost Zone Indicators */}
+                <div style={{
+                  position: "absolute",
+                  left: "50%", // 5 clicks/sec = 50% of 10
+                  top: 0,
+                  bottom: 0,
+                  width: "2px",
+                  backgroundColor: "#f39c12",
+                  opacity: 0.5,
+                }} />
+                <div style={{
+                  position: "absolute",
+                  left: "90%", // 9 clicks/sec = 90% of 10
+                  top: 0,
+                  bottom: 0,
+                  width: "2px",
+                  backgroundColor: "#e74c3c",
+                  opacity: 0.5,
+                }} />
+                
+                {/* Gauge Markers */}
+                <div style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 10px",
+                  pointerEvents: "none",
+                }}>
+                  <span style={{ 
+                    position: "absolute",
+                    left: "10px",
+                    color: "#fff", 
+                    fontSize: "0.8rem", 
+                    opacity: 0.7 
+                  }}>0</span>
+                  <span style={{ 
+                    position: "absolute",
+                    left: "calc(50% - 20px)",
+                    color: clicksPerSecond >= 5 ? "#f39c12" : "#fff", 
+                    fontSize: clicksPerSecond >= 5 ? "0.9rem" : "0.8rem", 
+                    fontWeight: clicksPerSecond >= 5 ? "bold" : "normal",
+                    opacity: clicksPerSecond >= 5 ? 1 : 0.7 
+                  }}>5 (2X)</span>
+                  <span style={{ 
+                    position: "absolute",
+                    left: "calc(90% - 20px)",
+                    color: clicksPerSecond >= 9 ? "#e74c3c" : "#fff", 
+                    fontSize: clicksPerSecond >= 9 ? "0.9rem" : "0.8rem", 
+                    fontWeight: clicksPerSecond >= 9 ? "bold" : "normal",
+                    opacity: clicksPerSecond >= 9 ? 1 : 0.7 
+                  }}>9 (3X)</span>
+                  <span style={{ 
+                    position: "absolute",
+                    right: "10px",
+                    color: "#fff", 
+                    fontSize: "0.8rem", 
+                    opacity: 0.7 
+                  }}>10</span>
+                </div>
+              </div>
+              
+              {/* Speed indicator text */}
+              <div style={{
+                textAlign: "center",
+                marginTop: "5px",
+                fontSize: "0.9rem",
+                color: clicksPerSecond < 3 ? "#2ecc71" :
+                       clicksPerSecond < 6 ? "#f1c40f" :
+                       clicksPerSecond < 8 ? "#e67e22" : "#e74c3c",
+                fontWeight: "bold",
+              }}>
+                {clicksPerSecond < 3 ? "Slow & Steady" :
+                 clicksPerSecond < 6 ? "Getting Warmer!" :
+                 clicksPerSecond < 8 ? "On Fire! 🔥" : "INSANE SPEED! 🚀"}
+              </div>
+            </div>
+            
+            <div
+              style={{
+                cursor: wallet?.address ? "pointer" : "not-allowed",
+                opacity: wallet?.address ? 1 : 0.5,
+                transition: "transform 0.1s ease",
+                transform: isButtonPressed ? "scale(0.95)" : "scale(1)",
+              }}
+              onClick={(e) => handleBigRedButton(e)}
+              onMouseDown={() => setIsButtonPressed(true)}
+              onMouseUp={() => setIsButtonPressed(false)}
+              onMouseLeave={() => setIsButtonPressed(false)}
+            >
+              <img
+                src={isButtonPressed ? "/button-pressed.png" : "/button.png"}
+                alt="Big Red Button"
+                style={{
+                  width: "450px",
+                  height: "450px",
+                  userSelect: "none",
+                  WebkitUserSelect: "none",
+                  filter: wallet?.address ? "none" : "grayscale(50%)",
+                }}
+                draggable={false}
+              />
+            </div>
+            
+            {bombPenalty > 0 && (
+              <p style={{ 
+                color: "#ff4444", 
+                marginTop: "20px",
+                fontSize: "1.2rem",
+                textAlign: "center",
+              }}>
+                💣 Bomb penalty active: {bombPenalty} clicks remaining
+              </p>
+            )}
+            
+            <p style={{
+              color: "#95a5a6",
+              marginTop: "15px",
+              fontSize: "0.9rem",
+              textAlign: "center",
+            }}>
+              Each click = {clicksPerSecond >= 9 ? "3" : clicksPerSecond >= 5 ? "2" : "1"} ORANJ token{clicksPerSecond >= 5 ? "s" : ""}!
+            </p>
+          </div>
+          
+          {/* Render button particles */}
+          {buttonParticles.map((particle) => (
+            <div
+              key={particle.id}
+              style={{
+                position: "fixed",
+                left: particle.x,
+                top: particle.y,
+                width: particle.size,
+                height: particle.size,
+                backgroundImage: "url('/orange.png')",
+                backgroundSize: "contain",
+                backgroundRepeat: "no-repeat",
+                opacity: particle.opacity,
+                transform: `translate(-50%, -50%) rotate(${particle.rotation}deg)`,
+                pointerEvents: "none",
+                zIndex: 1001,
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+              }}
+            />
+          ))}
+        </>
+      )}
+      
       <TransactionList transactions={transactions} setTransactions={setTransactions} />
       <div className="wallet-input">
         {(!wallet?.address && (
@@ -743,11 +1208,215 @@ function App() {
           )}
       </div>
       <div className={`score ${isScoreShaking ? "shake" : ""}`}>
-        🚀 {count.toLocaleString()} ORANJ
+        {/* Progress Bar Container */}
+        <div style={{ 
+          width: "100%", 
+          maxWidth: "600px", 
+          margin: "0 auto 20px",
+          textAlign: "center"
+        }}>
+          <div style={{
+            fontSize: "2rem",
+            fontWeight: "bold",
+            marginBottom: "10px",
+            color: "#ff9500",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.3)"
+          }}>
+            🚀 {count.toLocaleString()} ORANJ
+          </div>
+          
+          {/* Calculate current tier and progress */}
+          {(() => {
+            const tiers = [
+              { min: 0, max: 100, label: "100" },
+              { min: 100, max: 250, label: "250" },
+              { min: 250, max: 500, label: "500" },
+              { min: 500, max: 1000, label: "1K" },
+              { min: 1000, max: 10000, label: "10K" },
+              { min: 10000, max: 25000, label: "25K" },
+              { min: 25000, max: 50000, label: "50K" },
+              { min: 50000, max: 75000, label: "75K" },
+              { min: 75000, max: 100000, label: "100K" },
+              { min: 100000, max: 250000, label: "250K" },
+              { min: 250000, max: 500000, label: "500K" },
+              { min: 500000, max: 750000, label: "750K" },
+              { min: 750000, max: 1000000, label: "1M" },
+            ];
+            
+            const currentTier = tiers.find(tier => count >= tier.min && count < tier.max) || tiers[tiers.length - 1];
+            const tierProgress = ((count - currentTier.min) / (currentTier.max - currentTier.min)) * 100;
+            const currentTierIndex = tiers.indexOf(currentTier);
+            
+            return (
+              <>
+                {/* Current tier info */}
+                <div style={{
+                  fontSize: "1.2rem",
+                  marginBottom: "10px",
+                  color: "#95a5a6"
+                }}>
+                  Progress to {currentTier.label}: {count >= 1000000 ? "🎉 COMPLETED! 🎉" : `${Math.floor(tierProgress)}%`}
+                </div>
+                
+                {/* Progress Bar Background */}
+                <div style={{
+                  width: "100%",
+                  height: "30px",
+                  backgroundColor: "rgba(255, 149, 0, 0.2)",
+                  borderRadius: "15px",
+                  position: "relative",
+                  overflow: "hidden",
+                  border: "2px solid #ff9500",
+                  boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)"
+                }}>
+                  {/* Progress Bar Fill */}
+                  <div style={{
+                    width: count >= 1000000 ? "100%" : `${Math.min(tierProgress, 100)}%`,
+                    height: "100%",
+                    background: count >= 1000000 
+                      ? "linear-gradient(90deg, #2ecc71 0%, #27ae60 100%)"
+                      : "linear-gradient(90deg, #ff6b00 0%, #ff9500 50%, #ffb347 100%)",
+                    borderRadius: "13px",
+                    position: "relative",
+                    transition: "width 0.3s ease",
+                    boxShadow: "0 2px 8px rgba(255, 149, 0, 0.4)",
+                    animation: count > 0 ? "pulse 2s ease-in-out infinite" : "none"
+                  }}>
+                    {/* Glow effect on the end */}
+                    {count < 1000000 && (
+                      <div style={{
+                        position: "absolute",
+                        right: "-5px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: "10px",
+                        height: "140%",
+                        background: "radial-gradient(ellipse at center, rgba(255,255,255,0.8) 0%, transparent 70%)",
+                        filter: "blur(3px)"
+                      }} />
+                    )}
+                  </div>
+                  
+                  {/* Current vs Next milestone */}
+                  <div style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    fontSize: "0.9rem",
+                    fontWeight: "bold",
+                    color: tierProgress > 50 || count >= 1000000 ? "#fff" : "#ff9500",
+                    textShadow: "1px 1px 2px rgba(0,0,0,0.5)"
+                  }}>
+                    {count >= 1000000 ? "🏆 1M ACHIEVED!" : `${count.toLocaleString()} / ${currentTier.max.toLocaleString()}`}
+                  </div>
+                </div>
+                
+                {/* Tier indicators */}
+                <div style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginTop: "15px",
+                  gap: "8px",
+                  flexWrap: "wrap"
+                }}>
+                  {tiers.map((tier, index) => (
+                    <div
+                      key={tier.label}
+                      style={{
+                        padding: "4px 8px",
+                        borderRadius: "12px",
+                        fontSize: "0.8rem",
+                        fontWeight: index <= currentTierIndex ? "bold" : "normal",
+                        backgroundColor: index < currentTierIndex 
+                          ? "#2ecc71" 
+                          : index === currentTierIndex 
+                            ? "#ff9500" 
+                            : "rgba(149, 165, 166, 0.2)",
+                        color: index <= currentTierIndex ? "#fff" : "#95a5a6",
+                        border: index === currentTierIndex ? "2px solid #ff9500" : "none",
+                        transition: "all 0.3s ease"
+                      }}
+                    >
+                      {tier.label} {index < currentTierIndex && "✓"}
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
+          
+          {/* T-shirt incentive text */}
+          <div style={{
+            marginTop: "20px",
+            fontSize: "1rem",
+            color: "#2ecc71",
+            fontWeight: "bold",
+            textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
+            animation: "glow 2s ease-in-out infinite"
+          }}>
+            👕 First 10 to achieve 1M oranges get a FREE T-SHIRT! 👕
+          </div>
+        </div>
+        
         {bombPenalty > 0 && (
           <span style={{ color: "#ff4444", marginLeft: "10px" }}>💣 Penalty: {bombPenalty} oranges</span>
         )}
+        
+        <style>{`
+          @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+          }
+          @keyframes glow {
+            0% { 
+              text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 10px rgba(46, 204, 113, 0.5);
+            }
+            50% { 
+              text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 20px rgba(46, 204, 113, 0.8);
+            }
+            100% { 
+              text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 10px rgba(46, 204, 113, 0.5);
+            }
+          }
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+          }
+        `}</style>
       </div>
+      
+      {/* Want a challenge button */}
+      <button
+        onClick={() => setShowButtonModal(true)}
+        style={{
+          marginTop: "20px",
+          padding: "15px 30px",
+          backgroundColor: "#ff9500",
+          color: "white",
+          border: "none",
+          borderRadius: "10px",
+          cursor: "pointer",
+          fontSize: "1.2rem",
+          fontWeight: "bold",
+          transition: "all 0.3s ease",
+          boxShadow: "0 4px 15px rgba(255, 149, 0, 0.3)",
+          transform: "translateY(0)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#ff7700";
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 6px 20px rgba(255, 149, 0, 0.4)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#ff9500";
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 149, 0, 0.3)";
+        }}
+      >
+        Wanna go faster?
+      </button>
 
       <div
         className="wallet-address desktopOnly"
