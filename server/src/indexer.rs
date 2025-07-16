@@ -23,7 +23,7 @@ use crate::*;
 use client_sdk::contract_indexer::axum;
 use client_sdk::contract_indexer::utoipa;
 
-#[derive(Default, Debug, Clone, Serialize, BorshSerialize, BorshDeserialize)]
+#[derive(Debug, Clone, Serialize, serde::Deserialize, BorshSerialize, BorshDeserialize)]
 pub struct FaucetCustomState {
     pub contract: Faucet,
     pub balances: HashMap<Identity, u128>,
@@ -46,7 +46,14 @@ impl TxExecutorHandler for FaucetCustomState {
         _register_blob: &RegisterContractEffect,
         _metadata: &Option<Vec<u8>>,
     ) -> anyhow::Result<Self> {
-        Ok(Default::default())
+        // Inclure le fichier JSON au moment de la compilation
+        const INITIAL_STATE: &str = include_str!("./testnet_dump.json");
+
+        // Parser le contenu JSON
+        let state: FaucetCustomState = serde_json::from_str(INITIAL_STATE)
+            .map_err(|e| anyhow!("Failed to parse testnet_dump.json: {}", e))?;
+
+        Ok(state)
     }
 }
 
@@ -119,7 +126,7 @@ pub async fn get_leaderboard(
         .into_iter()
         .map(|(identity, balance)| (identity.clone(), *balance))
         .collect();
-    let leaderboard: HashMap<Identity, u128> = leaderboard.into_iter().take(50).collect();
+    let leaderboard: HashMap<Identity, u128> = leaderboard.into_iter().take(200).collect();
     // Return as Json
     Ok(Json(leaderboard))
 }
@@ -143,7 +150,7 @@ pub async fn get_balance(
     store
         .state
         .clone()
-        .map(|s| s.balances.get(&account).cloned())
+        .map(|s| s.balances.get(&account).cloned().unwrap_or(0))
         .map(Json)
         .ok_or(AppError(
             StatusCode::NOT_FOUND,

@@ -40,7 +40,7 @@ export function Leaderboard() {
             address,
             balance: Number(balance),
           }))
-          .slice(0, 30);
+          .slice(0, 200);
 
         setEntries(sortedEntries);
         setRefreshProgress(0);

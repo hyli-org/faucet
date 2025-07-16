@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use app::{AppModule, AppModuleCtx};
 use axum::Router;
-use client_sdk::{contract_indexer::ContractHandler, rest_client::NodeApiHttpClient};
+use client_sdk::rest_client::NodeApiHttpClient;
 use config::File;
 use contract1::Faucet;
 use contracts::CONTRACT_ELF;
