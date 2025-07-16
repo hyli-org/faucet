@@ -888,6 +888,22 @@ function App() {
 
   return (
     <div className="App">
+      {/* Logo */}
+      <img
+        src="/wordart.png"
+        alt="Logo"
+        style={{
+          position: "absolute",
+          top: "20px",
+          left: "20px",
+          height: "80px",
+          width: "auto",
+          zIndex: 100,
+          filter: "drop-shadow(2px 2px 4px rgba(0,0,0,0.5))",
+        }}
+        className="logo-responsive"
+      />
+      
       {/* Big Red Button Modal */}
       {showButtonModal && (
         <>
