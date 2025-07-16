@@ -105,30 +105,53 @@ pub async fn get_state<S: Serialize + Clone + 'static>(
 
 #[utoipa::path(
     get,
-    path = "/leaderboard",
+    path = "/leaderboard/{account}",
+    params(
+        ("account" = String, Path, description = "Optional account to get rank for")
+    ),
     tag = "Contract",
     responses(
-        (status = OK, description = "Get json leaderboard")
+        (status = OK, description = "Get json leaderboard and optional rank")
     )
 )]
 pub async fn get_leaderboard(
+    Path(account): Path<Identity>,
     State(state): State<ContractHandlerStore<FaucetCustomState>>,
 ) -> Result<impl IntoResponse, AppError> {
     let store = state.read().await;
     let mut leaderboard: Vec<_> = store
         .state
-        .as_ref()
-        .map(|s| s.balances.iter().collect())
+        .clone()
+        .map(|s| s.balances.into_iter().collect())
         .unwrap_or_default();
-    leaderboard.sort_by(|a, b| b.1.cmp(a.1)); // Sort by balance descending
-                                              // Convert to a vector of tuples (Identity, u128)
-    let leaderboard: Vec<(Identity, u128)> = leaderboard
-        .into_iter()
-        .map(|(identity, balance)| (identity.clone(), *balance))
-        .collect();
+    leaderboard.sort_by(|a, b| b.1.cmp(&a.1)); // Sort by balance descending
+
+    // If account is provided, calculate rank
+    let rank = if !store
+        .state
+        .as_ref()
+        .map(|s| s.balances.contains_key(&account))
+        .unwrap_or(false)
+    {
+        Some(leaderboard.len() + 1) // Account not found, return rank as last position
+    } else {
+        leaderboard
+            .iter()
+            .position(|(identity, _)| identity == &account)
+            .map(|pos| pos + 1)
+    };
     let leaderboard: HashMap<Identity, u128> = leaderboard.into_iter().take(200).collect();
-    // Return as Json
-    Ok(Json(leaderboard))
+
+    // Create response with leaderboard and optional rank
+    #[derive(serde::Serialize)]
+    struct LeaderboardResponse {
+        leaderboard: HashMap<Identity, u128>,
+        rank: Option<usize>,
+    }
+
+    let response = LeaderboardResponse { leaderboard, rank };
+
+    Ok(Json(response))
 }
 
 #[utoipa::path(

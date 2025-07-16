@@ -999,7 +999,7 @@ function App() {
       <div className="achievements-container">
         {
           // Off for now to avoid incentiving TX spam
-          <Leaderboard />
+          <Leaderboard account={wallet?.address} />
         }
         <div className="achievements">
           <h3>🏆 Achievements</h3>
