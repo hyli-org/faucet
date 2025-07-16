@@ -52,7 +52,7 @@ export type FaucetAction =
 // Builders
 //
 
-export const blob_click = (callee: number): Blob => {
+export const blob_click = (_callee: number): Blob => {
     const action: Nonced<FaucetAction> = {
         action: { Click: {} },
         nonce: Date.now(),
