@@ -3,10 +3,12 @@ import { BlobTransaction, IndexerApiHttpClient, NodeApiHttpClient, TxHash } from
 class NodeService {
     client: NodeApiHttpClient;
     indexer: IndexerApiHttpClient;
+    server: IndexerApiHttpClient;
 
     constructor() {
         this.client = new NodeApiHttpClient(import.meta.env.VITE_NODE_BASE_URL);
         this.indexer = new IndexerApiHttpClient(import.meta.env.VITE_INDEXER_BASE_URL);
+        this.server = new IndexerApiHttpClient(import.meta.env.VITE_SERVER_BASE_URL);
     }
 
     async sendBlobTx(tx: BlobTransaction): Promise<TxHash> {
@@ -31,15 +33,9 @@ class NodeService {
     }
 
     async getBalance(address: string): Promise<number> {
-        interface BalanceResponse {
-            balance: number;
-        }
-        const balance: BalanceResponse = await this.indexer.get(
-            "v1/indexer/contract/oranj/balance/" + address,
-            "get balance"
-        );
+        const balance: number = await this.server.get("v1/indexer/contract/faucet/balance/" + address, "get balance");
         console.log("Balance:", balance);
-        return balance.balance;
+        return balance;
     }
 }
 

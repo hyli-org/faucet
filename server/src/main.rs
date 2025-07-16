@@ -16,10 +16,12 @@ use hyle_modules::{
     },
     utils::logger::setup_tracing,
 };
+use indexer::FaucetCustomState;
 use prometheus::Registry;
 use sdk::{api::NodeInfo, info, ContractName, ZkContract};
 use sp1_sdk::{Prover, SP1ProvingKey};
 use std::{
+    collections::HashMap,
     env,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
@@ -27,6 +29,7 @@ use std::{
 use tracing::error;
 
 mod app;
+mod indexer;
 mod init;
 
 #[derive(serde::Deserialize, Debug)]
@@ -132,7 +135,7 @@ async fn main() -> Result<()> {
     handler.build_module::<AppModule>(app_ctx.clone()).await?;
 
     handler
-        .build_module::<ContractStateIndexer<Faucet>>(ContractStateIndexerCtx {
+        .build_module::<ContractStateIndexer<FaucetCustomState>>(ContractStateIndexerCtx {
             contract_name,
             data_directory: config.data_directory.clone(),
             api: api.clone(),

@@ -5,7 +5,8 @@ import { nodeService } from "./services/NodeService";
 import { BlobTransaction } from "hyli";
 import { useConfig } from "./hooks/useConfig";
 import { transfer } from "./types/smt_token";
-//import { Leaderboard } from './components/Leaderboard';
+import { Leaderboard } from "./components/Leaderboard";
+
 import { TransactionList } from "./components/TransactionList";
 import { HyliWallet, useWallet } from "hyli-wallet";
 import slice1 from "./audio/slice1.mp3";
@@ -290,13 +291,13 @@ function App() {
             // Only send blob tx if no bomb penalty is active
             if (bombPenalty === 0) {
                 // Send blob tx
-                const blobTransfer = transfer("faucet", wallet.address, "oranj", BigInt(1), 1);
+                // const blobTransfer = transfer("faucet", wallet.address, "oranj", BigInt(1), 1);
                 const blobClick = blob_click(0);
 
                 const identity = `${wallet.address}@${blobClick.contract_name}`;
                 const blobTx: BlobTransaction = {
                     identity,
-                    blobs: [blobTransfer, blobClick],
+                    blobs: [blobClick],
                 };
                 nodeService.sendBlobTx(blobTx).then((txHash) => {
                     // Add transaction to the list
@@ -307,7 +308,7 @@ function App() {
                                 timestamp: Date.now(),
                             },
                             ...prev,
-                        ].slice(0, 10)
+                        ].slice(0, 10),
                     ); // Keep only the last 10 transactions
                 });
 
@@ -382,7 +383,7 @@ function App() {
                     // Calculate projection of orange position onto the line
                     const t = Math.max(
                         0,
-                        Math.min(1, ((orange.x - startX) * dx + (orange.y - startY) * dy) / (lineLength * lineLength))
+                        Math.min(1, ((orange.x - startX) * dx + (orange.y - startY) * dy) / (lineLength * lineLength)),
                     );
 
                     // Calculate closest point on the line segment
@@ -398,7 +399,7 @@ function App() {
                         return orange;
                     }
                     return orange;
-                })
+                }),
             );
 
             // Check for bombs
@@ -411,7 +412,7 @@ function App() {
 
                     const t = Math.max(
                         0,
-                        Math.min(1, ((bomb.x - startX) * dx + (bomb.y - startY) * dy) / (lineLength * lineLength))
+                        Math.min(1, ((bomb.x - startX) * dx + (bomb.y - startY) * dy) / (lineLength * lineLength)),
                     );
 
                     const closestX = startX + t * dx;
@@ -424,10 +425,10 @@ function App() {
                         return bomb;
                     }
                     return bomb;
-                })
+                }),
             );
         },
-        [createSliceEffect, sliceOrange, sliceBomb]
+        [createSliceEffect, sliceOrange, sliceBomb],
     );
 
     const handleMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -487,7 +488,7 @@ function App() {
                 lastMousePosition.current = { x: currentX, y: currentY };
             }
         },
-        [checkSlice, createSliceEffect]
+        [checkSlice, createSliceEffect],
     );
 
     const handleTouchMove = useCallback(
@@ -521,7 +522,7 @@ function App() {
                 lastMousePosition.current = { x: currentX, y: currentY };
             }
         },
-        [checkSlice, createSliceEffect]
+        [checkSlice, createSliceEffect],
     );
 
     const handleMouseUp = useCallback(() => {
@@ -605,7 +606,7 @@ function App() {
                         speed: orange.speed + GRAVITY * (elapsed / 10),
                         rotation: orange.rotation + 2 * (elapsed / 10),
                     }))
-                    .filter((orange) => orange.y < window.innerHeight + 100)
+                    .filter((orange) => orange.y < window.innerHeight + 100),
             );
 
             setBombs((prev) =>
@@ -616,7 +617,7 @@ function App() {
                         speed: bomb.speed + GRAVITY * (elapsed / 10),
                         rotation: bomb.rotation + 2 * (elapsed / 10),
                     }))
-                    .filter((bomb) => bomb.y < window.innerHeight + 100)
+                    .filter((bomb) => bomb.y < window.innerHeight + 100),
             );
 
             requestAnimationFrame(animate);
@@ -630,7 +631,7 @@ function App() {
         [...achievements].reverse().forEach((achievement) => {
             if (!achievement.unlocked && count >= achievement.threshold) {
                 const updatedAchievements = achievements.map((a) =>
-                    a.id === achievement.id ? { ...a, unlocked: true } : a
+                    a.id === achievement.id ? { ...a, unlocked: true } : a,
                 );
                 setAchievements(updatedAchievements);
                 setLastAchievement(achievement);
@@ -677,7 +678,7 @@ function App() {
                         velocityY: currentVelocityY,
                         time,
                     };
-                })
+                }),
             );
             requestAnimationFrame(animate);
         });
@@ -700,7 +701,7 @@ function App() {
                         velocityY: currentVelocityY,
                         time,
                     };
-                })
+                }),
             );
             requestAnimationFrame(animate);
         });
@@ -901,7 +902,7 @@ function App() {
                         style={
                             {
                                 /*left: `${particle.x}px`,
-                                top: `${particle.y}px`,*/
+                top: `${particle.y}px`,*/
                                 transform: `translateX(${particle.x}px) translateY(${particle.y}px)`,
                                 opacity: Math.max(0, 1 - particle.time / 1.5),
                             } as React.CSSProperties
@@ -998,7 +999,7 @@ function App() {
             <div className="achievements-container">
                 {
                     // Off for now to avoid incentiving TX spam
-                    /*<Leaderboard />*/
+                    <Leaderboard account={wallet?.address} />
                 }
                 <div className="achievements">
                     <h3>🏆 Achievements</h3>

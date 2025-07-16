@@ -41,14 +41,14 @@ impl sdk::ZkContract for Faucet {
         // Execute the given action
         let res = match action.action {
             FaucetAction::Click => {
-                ctx.is_in_callee_blobs(
-                    &ContractName("oranj".to_string()),
-                    SmtTokenAction::Transfer {
-                        amount: 1,
-                        sender: ctx.contract_name.0.clone().into(),
-                        recipient: identity.0.rsplit_once('@').unwrap().0.into(),
-                    },
-                )?;
+                // ctx.is_in_callee_blobs(
+                //     &ContractName("oranj".to_string()),
+                //     SmtTokenAction::Transfer {
+                //         amount: 1,
+                //         sender: ctx.contract_name.0.clone().into(),
+                //         recipient: identity.0.rsplit_once('@').unwrap().0.into(),
+                //     },
+                // )?;
 
                 "Clicked".to_string()
                 // self.click(identity)?
