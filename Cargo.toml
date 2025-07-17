@@ -4,11 +4,11 @@ members = ["contracts", "contracts/contract1", "server"]
 exclude = ["init"]
 
 [workspace.dependencies]
-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", package = "hyle-contract-sdk" }
-client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", default-features = false, package = "hyle-client-sdk" }
-hyle-modules = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", package = "hyle-modules" }
-hyle-smt-token = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", default-features = false, package = "hyle-smt-token" }
-hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "main", package = "hyle-hydentity" }
+sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "speedup_prover_catchup", package = "hyle-contract-sdk" }
+client-sdk = { git = "https://github.com/Hyle-org/hyle.git", branch = "speedup_prover_catchup", default-features = false, package = "hyle-client-sdk" }
+hyle-modules = { git = "https://github.com/Hyle-org/hyle.git", branch = "speedup_prover_catchup", package = "hyle-modules" }
+hyle-smt-token = { git = "https://github.com/Hyle-org/hyle.git", branch = "speedup_prover_catchup", default-features = false, package = "hyle-smt-token" }
+hyle-hydentity = { git = "https://github.com/Hyle-org/hyle.git", branch = "speedup_prover_catchup", package = "hyle-hydentity" }
 
 contracts = { path = "contracts", default-features = false, package = "contracts" }
 contract1 = { path = "contracts/contract1", package = "contract1" }
@@ -19,3 +19,9 @@ edition = "2021"
 
 #[patch.crates-io]
 #sha2 = { git = "https://github.com/sp1-patches/RustCrypto-hashes", package = "sha2", tag = "patch-sha2-0.10.8-sp1-4.0.0" }
+
+# [patch."https://github.com/Hyle-org/hyle"]
+# hyle-contract-sdk = { path = "../hyle/crates/contract-sdk", package = "hyle-contract-sdk" }
+# hyle-client-sdk = { path = "../hyle/crates/client-sdk", package = "hyle-client-sdk" }
+# hyle-smt-token = { path = "../hyle/crates/contracts/smt-token", package = "hyle-smt-token" }
+# hyle-modules = { path = "../hyle/crates/hyle-modules", package = "hyle-modules" }
