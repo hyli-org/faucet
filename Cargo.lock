@@ -1892,7 +1892,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 [[package]]
 name = "hyle-client-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#94d63ec56183cf8dd1a1aca2681ddfd6563375f9"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#a3526112c7a22f5e385e53932e9ad103a919b343"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -1912,7 +1912,7 @@ dependencies = [
 [[package]]
 name = "hyle-contract-sdk"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#94d63ec56183cf8dd1a1aca2681ddfd6563375f9"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#a3526112c7a22f5e385e53932e9ad103a919b343"
 dependencies = [
  "borsh",
  "hyle-model",
@@ -1925,7 +1925,7 @@ dependencies = [
 [[package]]
 name = "hyle-crypto"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#94d63ec56183cf8dd1a1aca2681ddfd6563375f9"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#a3526112c7a22f5e385e53932e9ad103a919b343"
 dependencies = [
  "anyhow",
  "blst",
@@ -1938,7 +1938,7 @@ dependencies = [
 [[package]]
 name = "hyle-model"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#94d63ec56183cf8dd1a1aca2681ddfd6563375f9"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#a3526112c7a22f5e385e53932e9ad103a919b343"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -1961,7 +1961,7 @@ dependencies = [
 [[package]]
 name = "hyle-modules"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#94d63ec56183cf8dd1a1aca2681ddfd6563375f9"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#a3526112c7a22f5e385e53932e9ad103a919b343"
 dependencies = [
  "anyhow",
  "anymap",
@@ -1996,7 +1996,7 @@ dependencies = [
 [[package]]
 name = "hyle-net"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#94d63ec56183cf8dd1a1aca2681ddfd6563375f9"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#a3526112c7a22f5e385e53932e9ad103a919b343"
 dependencies = [
  "anyhow",
  "axum 0.8.4",
@@ -2022,7 +2022,7 @@ dependencies = [
 [[package]]
 name = "hyle-verifiers"
 version = "0.13.0-rc.4"
-source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#94d63ec56183cf8dd1a1aca2681ddfd6563375f9"
+source = "git+https://github.com/Hyle-org/hyle.git?branch=speedup_prover_catchup#a3526112c7a22f5e385e53932e9ad103a919b343"
 dependencies = [
  "anyhow",
  "borsh",
