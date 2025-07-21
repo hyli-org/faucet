@@ -1,3 +1,19 @@
+.logo-responsive {
+    height: 80px !important;
+}
+
+@media (min-width: 768px) {
+    .logo-responsive {
+        height: 120px !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .logo-responsive {
+        height: 150px !important;
+    }
+}
+
 .wallet-input {
     margin-bottom: 20px;
     width: 100%;
